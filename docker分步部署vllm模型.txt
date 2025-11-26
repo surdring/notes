@@ -1,0 +1,94 @@
+sudo docker run -itd \
+--name Qwen-32B-AWQ \
+--restart=unless-stopped \
+--network=host \
+--ipc=host \
+--shm-size=32g \
+--device=/dev/kfd \
+--device=/dev/dri \
+-e ROCR_VISIBLE_DEVICES=0 \
+-e HSA_OVERRIDE_GFX_VERSION=9.0.6 \
+-e HCC_AMDGPU_TARGET=gfx906 \
+--group-add video \
+-p 8000:8000 \
+-v /home/zhengxueen/model:/model \
+-v /home/zhengxueen/workspace/localworkspace:/workspace \
+nalanzeyu/vllm-gfx906 \
+vllm serve /model \
+--quantization awq \
+--max-model-len 5100 \
+--disable-log-requests \
+--dtype float16
+尝试分开运行
+创建vllm-gfx906容器
+sudo docker run -itd \
+--name vllm-gfx906 \
+--restart=unless-stopped \
+--network=host \
+--ipc=host \
+--shm-size=32g \
+--device=/dev/kfd \
+--device=/dev/dri \
+-e ROCR_VISIBLE_DEVICES=0 \
+-e HSA_OVERRIDE_GFX_VERSION=9.0.6 \
+-e HCC_AMDGPU_TARGET=gfx906 \
+--group-add video \
+-p 8000:8000 \
+-v /home/zhengxueen/model:/model \
+-v /home/zhengxueen/workspace/localworkspace:/workspace \
+-v /home/zhengxueen/vllm-root:/root \
+nalanzeyu/vllm-gfx906
+
+进入容器
+docker exec -it vllm-gfx906 bash
+运行模型
+vllm serve /model/Qwen-32B-AWQ \
+--quantization awq \
+--max-model-len 5100 \
+--disable-log-requests \
+--dtype float16
+
+
+vllm serve /models/gemma-3-27b/gemma-3-27b-it-Q4_1.gguf \
+--tensor-parallel-size 1 \
+--gpu-memory-utilization 0.90 \
+--max-model-len 5100 \
+--disable-log-requests \
+测试
+curl http://localhost:8000/v1/completions \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "/model/Qwen-32B-AWQ",
+    "prompt": "讲个故事",
+    "max_tokens": 20,
+    "temperature": 0
+}'
+sudo docker logs -f Qwen-32B-AWQ
+
+docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+
+curl http://localhost:8000/v1/completions \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "/model/Qwen-32B-AWQ",
+    "prompt": "讲个故事",
+    "max_tokens": 20,
+    "temperature": 0
+}'
+docker run -it --rm \
+  --network=host \
+  --ipc=host \
+  --shm-size=16g \
+  --device=/dev/kfd \
+  --device=/dev/dri \
+  --group-add video \
+  --cap-add=SYS_PTRACE \
+  --security-opt seccomp=unconfined \
+  -v /path/to/your/models:/models \
+  nalanzeyu/vllm-gfx906:v0.9.0-rocm6.3 \
+  vllm serve Qwen/Qwen3-32B-AWQ \
+  --tensor-parallel-size 2 \
+  --quantization awq \
+  --max-model-len 5100 \
+  --disable-log-requests \
+  --dtype float16

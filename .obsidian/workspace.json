@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "d6462a4354df42d0",
+    "type": "split",
+    "children": [
+      {
+        "id": "88172d2cfa9a8401",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d4fbb9ce51cabf76",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "0f56e7659d65b552",
+    "type": "split",
+    "children": [
+      {
+        "id": "9b14a585901ded7b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "11b6c352fe219a15",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "f90949efac09c676",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "49d5fdb1401201a8",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "879f09582170b7c7",
+    "type": "split",
+    "children": [
+      {
+        "id": "968d9376701a587c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "368e81b74a92d9e0",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "llama-server.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "llama-server 的反向链接列表"
+            }
+          },
+          {
+            "id": "cece6b633e800a11",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "llama-server.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "llama-server 的出链列表"
+            }
+          },
+          {
+            "id": "62f47cd5a5e7fcb2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "eea561cece1aace8",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "2803cf92d3c9d789",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "llama-server.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "llama-server 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:创建新数据库": false
+    }
+  },
+  "active": "d4fbb9ce51cabf76",
+  "lastOpenFiles": [
+    "llama-cpp/llama.cpp-MI50-ROCm构建指南.md",
+    "llama-cpp/llama.cpp构建文档-旧版.md",
+    "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
+    "rocm/AMD MI50 在Ubuntu 24.04下安装驱动和ROCm.md",
+    "windsurf.json",
+    "ROCm 的专用 ollama Docker 镜像.md",
+    "rocm",
+    "docker分步部署vllm模型.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "llama-cpp/llama.cpp构建文档.md",
+    "Llama.cpp 本地部署与多 GPU 环境配置指南.md",
+    "llama-server.md",
+    "llama-cpp",
+    "emails.md",
+    "2025-11-24.md",
+    "2025-11-23.md",
+    "README.md",
+    "docker分步部署vllm模型.txt"
+  ]
+}
