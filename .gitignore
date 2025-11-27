@@ -1,0 +1,176 @@
+# 操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 编辑器和IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 配置文件（可能包含敏感信息）
+config.local.*
+secrets.*
+*.key
+*.pem
+*.p12
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 大型媒体文件
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mp3
+*.wav
+*.flac
+
+# 模型文件（通常很大）
+*.bin
+*.safetensors
+*.gguf
+*.pth
+*.pt
+*.onnx
+*.h5
+*.pb
+
+# 缓存目录
+.cache/
+.parcel-cache/
+
+# 构建输出
+build/
+dist/
+out/
+
+# 测试覆盖率报告
+coverage/
+.nyc_output/
+
+# 运行时文件
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 日志文件
+logs
+*.log
+
+# 本地配置文件
+local.json
+local.*
+settings.local.*
+
+# 宝塔面板相关
+/www/server/panel/vhost/nginx/*.conf.backup
+/www/server/nginx/conf/nginx.conf.backup
+
+# 系统服务配置备份
+/etc/systemd/system/*.service.backup
+
+# 临时脚本
+tmp/
+temp/
+
+# 文档构建输出
+docs/_build/
+site/
+
+# Hugo
+public/
+resources/_gen/
+
+# MkDocs
+site/
+
+# Sphinx
+_build/
+
+# LaTeX辅助文件
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+
+
+# llama.cpp-rocm
+llama.cpp-rocm
+llama.cpp-rocm/*

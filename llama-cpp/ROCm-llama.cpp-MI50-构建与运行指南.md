@@ -125,7 +125,6 @@ HIP_VISIBLE_DEVICES=0 \
   --n-gpu-layers -1 \
   --jinja \
   --host 0.0.0.0 \
-  --threads 12 \
   --port 8080
 # 如需覆盖 GFX 版本，可在命令前增加：
 # HSA_OVERRIDE_GFX_VERSION=9.0.6 \
@@ -143,10 +142,24 @@ HIP_VISIBLE_DEVICES=0 \
   --temp 1.0 \
   --presence-penalty 0.0 \
   --host 0.0.0.0 \
-  --threads 12 \
   --port 8081
 
-# Qwen3-VL-8B-Thinking-1M-Q4_K_M
+# unslothQwen3-VL-32B-Thinking-1M-GGUF/Qwen3-VL-32B-Thinking-1M-Q4_K_M.gguf
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/unslothQwen3-VL-32B-Thinking-1M-GGUF/Qwen3-VL-32B-Thinking-1M-Q4_K_M.gguf \
+  --mmproj /mnt/ssd/models/unslothQwen3-VL-32B-Thinking-1M-GGUF/mmproj-F16.gguf \
+  --ctx-size 32768 \
+  --n-gpu-layers -1 \
+  --jinja \
+  --flash-attn on \
+  --top-p 0.95 \
+  --top-k 20 \
+  --temp 1.0 \
+  --presence-penalty 0.0 \
+  --host 0.0.0.0 \
+  --threads 12 \
+  --port 8082
 ```
 
 #### 使用 build-hip/llama-mtmd-cli 运行 Qwen3-VL Thinking（含视觉）
