@@ -1,6 +1,6 @@
 # Docker Ollama 完全卸载指南
 
-> 目标：完全删除 Docker 中安装的 Ollama 服务及其拉取的所有模型文件，释放存储空间和系统资源。
+> 目标：由于新版ollama对MI50支持不友好，完全删除 Docker 中安装的 Ollama 服务及其拉取的所有模型文件，释放存储空间和系统资源。
 >
 > 适用系统：Ubuntu 24.04 + Docker
 
