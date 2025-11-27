@@ -11,10 +11,14 @@
             "id": "d4fbb9ce51cabf76",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "ROCm-llama.cpp-MI50-构建与运行指南"
             }
           }
         ]
@@ -181,6 +185,13 @@
   },
   "active": "d4fbb9ce51cabf76",
   "lastOpenFiles": [
+    "uninstall_ollama_docker.sh",
+    "docker/Docker-Ollama完全卸载指南.md",
+    "docker",
+    "llama-cpp/Docker-Ollama完全卸载指南.md",
+    "rocm/ROCm-GPU显存清理指南.md",
+    "llama-cpp/ROCm-GPU显存清理指南.md",
+    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
     "llama-cpp/llama.cpp-MI50-ROCm构建指南.md",
     "llama-cpp/llama.cpp构建文档-旧版.md",
     "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
