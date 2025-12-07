@@ -13,6 +13,20 @@
             "state": {
               "type": "markdown",
               "state": {
+                "file": "ubuntu-system/llama_cpp_systemd_guide.md",
+                "mode": "source",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "llama_cpp_systemd_guide"
+            }
+          },
+          {
+            "id": "79c01027d97c6fc9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
                 "file": "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
                 "mode": "source",
                 "source": false
@@ -21,7 +35,8 @@
               "title": "ROCm-llama.cpp-MI50-构建与运行指南"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -180,35 +195,46 @@
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
-      "bases:创建新数据库": false
+      "bases:创建新数据库": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "d4fbb9ce51cabf76",
+  "active": "79c01027d97c6fc9",
   "lastOpenFiles": [
-    "uninstall_ollama_docker.sh",
+    "llama-cpp/模型部署指令集.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
+    "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
+    "ubuntu-system/github-upload-guide.md",
+    "ubuntu-system/ubuntu_uninstall_guide.md",
+    "ubuntu-system",
+    "system/llama_cpp_systemd_guide.md",
+    "rocm/ROCm-GPU显存清理指南.md",
+    "ubuntu-tools/tox_installation_guide.md",
+    "ubuntu-tools",
+    "rocm/ROCm7-卸载与安装指南.md",
     "docker/Docker-Ollama完全卸载指南.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "system/ubuntu_uninstall_guide.md",
+    "system",
+    "uninstall_ollama_docker.sh",
     "docker",
     "llama-cpp/Docker-Ollama完全卸载指南.md",
-    "rocm/ROCm-GPU显存清理指南.md",
     "llama-cpp/ROCm-GPU显存清理指南.md",
-    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
     "llama-cpp/llama.cpp-MI50-ROCm构建指南.md",
     "llama-cpp/llama.cpp构建文档-旧版.md",
-    "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
     "rocm/AMD MI50 在Ubuntu 24.04下安装驱动和ROCm.md",
     "windsurf.json",
     "ROCm 的专用 ollama Docker 镜像.md",
     "rocm",
     "docker分步部署vllm模型.md",
-    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
     "llama-cpp/llama.cpp构建文档.md",
     "Llama.cpp 本地部署与多 GPU 环境配置指南.md",
     "llama-server.md",
     "llama-cpp",
     "emails.md",
     "2025-11-24.md",
-    "2025-11-23.md",
-    "README.md",
     "docker分步部署vllm模型.txt"
   ]
 }
