@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+                "file": "llama-cpp/模型部署指令集.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ROCm-llama.cpp-MI50-构建与运行指南"
+              "title": "模型部署指令集"
             }
           }
         ],
@@ -201,9 +201,10 @@
   },
   "active": "79c01027d97c6fc9",
   "lastOpenFiles": [
-    "llama-cpp/模型部署指令集.md",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
     "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "llama-cpp/模型部署指令集.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
     "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
     "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
     "ubuntu-system/github-upload-guide.md",
@@ -215,7 +216,6 @@
     "ubuntu-tools",
     "rocm/ROCm7-卸载与安装指南.md",
     "docker/Docker-Ollama完全卸载指南.md",
-    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
     "system/ubuntu_uninstall_guide.md",
     "system",
     "uninstall_ollama_docker.sh",

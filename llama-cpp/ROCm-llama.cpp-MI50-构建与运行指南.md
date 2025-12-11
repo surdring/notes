@@ -94,14 +94,95 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" cmake -S . -B build-hi
 - `-DLLAMA_CURL=ON`：启用 HTTP/HTTPS 支持（例如下载模型、通过 URL 加载资源）。
 - `-j"$(nproc)"`：使用全部 CPU 核心并行编译。
 
-编译完成后，所有可执行文件位于：
-
-```bash
-/home/zhengxueen/workspace/llama.cpp-rocm/build-hip
-```
 
 常见可执行文件包括：`llama-cli`、`llama-bench`、`llama-server` 等。
 
+
+
+# 源码更新、重新编译到最终运行 Ministral-3-14B 模型
+---
+
+### 第一步：更新 llama.cpp 源代码
+
+为了支持 `Ministral-3` 架构，必须将代码更新到最新版本。
+
+1.  **进入源代码目录**
+    请修改为你的实际路径：
+    ```bash
+    cd /home/zhengxueen/workspace/llama.cpp
+    ```
+
+2.  **清理旧的编译文件 (非常重要)**
+    为了防止缓存冲突，建议先删除旧的构建目录：
+    ```bash
+    rm -rf build-hip
+    ```
+
+3.  **拉取最新代码**
+    ```bash
+    git checkout master
+    git pull origin master
+    ```
+
+4.  **更新子模块 (关键步骤)**
+    llama.cpp 依赖许多第三方库（如 ggml），必须同步更新：
+    ```bash
+    git submodule update --init --recursive
+    ```
+
+---
+
+### 第二步：编译 llama.cpp (同上)
+
+
+---
+
+### 第三步：运行 Ministral-3-14B 模型
+
+现在使用的是新版程序，它能够识别 `mistral3` 架构。
+
+```bash
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Ministral-3-14B/Ministral-3-14B-Reasoning-2512-Q4_K_M.gguf \
+  --mmproj /mnt/ssd/models/Ministral-3-14B/mmproj-F16.gguf \
+  --ctx-size 32684 \
+  --n-gpu-layers -1 \
+  --jinja \
+  --flash-attn on \
+  --top-p 0.95 \
+  --temp 0.7 \
+  --host 0.0.0.0 \
+  --threads 12 \
+  --port 8082
+```
+
+**参数微调建议：**
+1.  **`--n-gpu-layers 999`**:  
+    你之前设置为 `-1` (自动)，但有时手动设置为一个大数字（如 999）能强制让所有层都加载到显卡上（前提是显存足够）。你的日志显示有 32GB 显存，跑 14B Q4 量化模型（约 9GB）绰绰有余。
+2.  **`--ctx-size 32768`**:
+    Ministral 支持 128k 上下文，但考虑到显存和速度，32k 是一个很好的平衡点。
+
+---
+
+### 第四步：测试视觉功能 (可选)
+
+由于你加载了 `--mmproj`，你可以测试一下它的看图能力。
+
+使用 `curl` 发送一张图片进行测试（假设服务器在本地）：
+
+```bash
+curl http://localhost:8082/completion \
+    -H "Content-Type: application/json" \
+    -d '{
+        "prompt": "User: <image>\nDescribe this image.\nAssistant:",
+        "image_data": [{"data": "<BASE64_STRING_OF_YOUR_IMAGE>", "id": 10}],
+        "n_predict": 100
+    }'
+```
+*(注意：你需要将图片转换为 Base64 字符串填入)*
+
+或者直接使用支持 OpenAI 格式的客户端（如 Chatbox, Cherry Studio），将 API 地址设置为 `http://localhost:8082/v1`，并在聊天界面上传图片即可。
 ---
 
 ## 5. 在 MI50 上运行推理示例
