@@ -1,0 +1,234 @@
+# 稳定运行配置指南：WeCom Bot + FRP（user systemd 方案）
+
+本指南用于把 **WeCom Bot** 与 **frpc 内网穿透** 以“可自愈、重启后自动恢复、尽量少人工介入”的方式长期运行。
+
+适用场景：
+
+- 你把公网域名/端口（例如 `wecombot.tofly.top:7080`）通过 **frp** 转发到本机（或本机再转到本地服务）。
+- `wecom-bot` 使用 `python run.py` 启动（FastAPI + uvicorn）。
+- 你希望使用 **用户级 systemd**（`~/.config/systemd/user/`）管理 `frpc` 和 `wecombot`。
+
+> 核心原则
+>
+> - frpc 必须“断线能自动重连/崩溃能自动拉起”。
+> - user systemd 默认依赖“用户会话”，要想开机即运行，必须启用 **linger**。
+> - 企业微信回调在链路中断后可能出现“不再推送 POST 消息”的表现，恢复方式是“重新触发 URL 验证”。
+
+---
+
+## 1. 前置检查
+
+- **确认回调 URL 路径正确**（每个应用独立）：
+
+  - `http(s)://<域名>/wecom/prompt_optimizer/callback`
+  - `http(s)://<域名>/wecom/material_enabler/callback`
+
+- **确认服务健康检查可访问**：
+
+  - `GET http://<域名>:<端口>/healthz` 返回 200
+
+- **确认企微 URL 验证成功**（后文提供“强制验证/恢复”方法）。
+
+---
+
+## 2. 让 user systemd 不依赖登录（强烈推荐）
+
+user systemd 默认只有在你登录后才可靠启动。为保证机器重启后 **不登录也能运行**，启用 linger：
+
+```bash
+sudo loginctl enable-linger <你的用户名>
+```
+
+验证（可选）：
+
+```bash
+loginctl show-user <你的用户名> | grep Linger
+```
+
+---
+
+## 3. frpc：推荐的 user systemd 配置
+
+文件路径：`~/.config/systemd/user/frpc.service`
+
+> 说明：`Description` 是否带 `(User Service)` 无所谓，只是文字。
+
+推荐内容：
+
+```ini
+[Unit]
+Description=frpc
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/frp/frpc -c %h/frp/frpc.toml
+
+# 关键：断线/退出自动重启
+Restart=always
+RestartSec=3
+
+# 关键：避免短时间重启过多被限流
+StartLimitIntervalSec=0
+
+[Install]
+# 关键：user service 应挂到 default.target
+WantedBy=default.target
+```
+
+应用配置并启动：
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now frpc
+systemctl --user status frpc
+```
+
+查看日志：
+
+```bash
+journalctl --user -u frpc -f
+```
+
+---
+
+## 4. wecombot：推荐的 user systemd 配置
+
+文件路径：`~/.config/systemd/user/wecombot.service`
+
+推荐内容：
+
+```ini
+[Unit]
+Description=WeCom Bot
+After=network.target frpc.service
+Wants=network.target frpc.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/workspace/wecom-bot
+
+# 使用 venv
+Environment="PATH=%h/workspace/wecom-bot/venv/bin"
+
+# Oracle 依赖（如你需要）
+Environment="LD_LIBRARY_PATH=/opt/oracle/instantclient_11_2"
+
+ExecStart=%h/workspace/wecom-bot/venv/bin/python run.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+```
+
+应用配置并启动：
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now wecombot
+systemctl --user status wecombot
+systemctl --user restart wecombot
+```
+
+查看日志：
+
+```bash
+journalctl --user -u wecombot -f
+```
+
+---
+
+## 5. 启动顺序建议
+
+建议顺序：
+
+1. `frpc` 先启动并稳定连接
+2. `wecombot` 再启动
+
+你已经通过：
+
+- `After=... frpc.service`
+- `Wants=... frpc.service`
+
+实现了“尽量”按顺序启动。
+
+> 注意：user systemd 里很难做到“严格等待 frpc 连接成功后再启动 wecombot”。如果你需要更严格，可在 wecombot 的 `ExecStartPre` 里做自检（例如 curl 自己的公网地址/本地端口），但属于增强项。
+
+---
+
+## 6. 企微回调的稳定性与恢复
+
+### 6.1 为什么会出现“服务在，但发消息没反应”
+
+在 frp 断线/电脑重启期间，企业微信回调会超时失败；有时你会看到：
+
+- 后台“保存成功”，但服务端没有新的回调日志
+- 或 URL 验证没触发/未通过
+- 或企业微信暂时不推送 POST 消息
+
+### 6.2 快速恢复（强制触发 URL 验证）
+
+当发现“突然不回消息”时：
+
+- 在企微后台将回调 URL 临时改成：
+
+  - `.../callback?v=<时间戳>`
+
+- 保存后观察服务端日志出现：
+
+  - `收到 URL 验证请求`
+  - `URL 验证成功`（200 OK）
+
+通常会立即恢复 POST 推送。
+
+---
+
+## 7. 验证清单（建议每次重启后快速检查）
+
+- **frpc 是否在线**
+  - `systemctl --user status frpc`
+  - `journalctl --user -u frpc -n 50 --no-pager`
+
+- **wecombot 是否在线**
+  - `systemctl --user status wecombot`
+  - `curl -sS http://127.0.0.1:8001/healthz | head`
+
+- **公网入口是否可达**
+  - `curl -sS http://<域名>:<端口>/healthz | head`
+
+- **企微 URL 验证是否成功（必要时强制触发）**
+
+---
+
+## 8. 常见问题（FAQ）
+
+### Q1：`Description` 要写 `(User Service)` 吗？
+
+不需要。只是描述文字。
+
+### Q2：为什么 user 服务的 `WantedBy` 不能写 `multi-user.target`？
+
+`multi-user.target` 是 system 级 target。对 user systemd，推荐使用 `default.target`。
+
+### Q3：开启 linger 有安全影响吗？
+
+启用 linger 后，即使你不登录，该用户的 user 服务也能运行。
+
+- 优点：重启后自动启动、稳定
+- 注意：确保该用户的权限、服务命令、安全策略符合你的预期
+
+---
+
+## 9. 最终建议（长期最稳）
+
+如果条件允许，建议把 `frpc + wecombot` 从个人电脑迁移到 24x7 在线的服务器/小主机上。
+
+这样可以从根源避免：
+
+- 电脑重启
+- WiFi 波动
+- 休眠/唤醒
+
+导致的企业微信回调中断。

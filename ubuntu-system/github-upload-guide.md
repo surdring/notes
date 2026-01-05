@@ -289,3 +289,51 @@ Thumbs.db
 4. 验证了上传结果
 
 现在您的项目已经在 GitHub 上公开，其他开发者可以查看、克隆和贡献代码。记得定期维护和更新项目，保持代码质量和文档的完整性。
+
+### 远程仓库已经存在内容（比如 README 或 LICENSE），而本地仓库也有提交，导致 Git 不知道如何合并。这里有两种解决方案：
+
+### 方案1：保留远程仓库的更改（推荐）
+
+bash
+
+# 1. 设置 pull 策略为合并（merge）
+
+git config pull.rebase false
+
+# 2. 拉取并合并远程更改
+
+git pull origin main
+
+# 3. 解决冲突（如果有）
+
+# 4. 提交合并
+
+git commit -m "Merge remote changes"
+
+# 5. 推送到远程
+
+git push
+
+### 方案2：强制覆盖远程仓库（谨慎使用）
+
+如果你确定要丢弃远程仓库的所有更改，使用本地代码覆盖远程仓库：
+
+bash
+
+git push --force origin main
+
+
+### SSH 连接被中断,使用 HTTPS 方式推送，并临时关闭 SSL 验证：
+```bash
+# 1. 切回 HTTPS 地址
+git remote set-url origin https://github.com/surdring/wecom-bot.git
+
+# 2. 临时关闭 SSL 验证
+git config --global http.sslVerify false
+
+# 3. 强制推送
+git push --force origin main
+
+# 4. 推送成功后，重新开启 SSL 验证
+git config --global http.sslVerify true
+```

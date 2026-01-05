@@ -94,7 +94,7 @@ journalctl --user -u llama-server.service -f
 #### 服务1: GPT模型 (端口8080)
 
 ```ini
-# ~/.config/systemd/user/llama-server-8080.service
+# nano ~/.config/systemd/user/llama-server-8080.service
 # ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf -c 0 --n-gpu-layers -1 --jinja --host 0.0.0.0 --port 8080 --alias gpt-oss-20b
 [Unit]
 Description=Llama.cpp Server on Port 8080
@@ -104,7 +104,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
-ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf --ctx-size 65536 --n-gpu-layers -1 --jinja --host 0.0.0.0 --port 8080 --alias gpt-oss-20b
+ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-safeguard-20b-Q4_K_M.gguf --ctx-size 65536 --n-gpu-layers -1 --jinja --api-key sk-local-gpt20b --host 0.0.0.0 --port 8080 --alias gpt-oss-20b
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -116,7 +116,7 @@ WantedBy=default.target
 
 #### 服务2: OCR模型 (端口8082)
 ```ini
-# ~/.config/systemd/user/llama-server-8082.service
+# nano ~/.config/systemd/user/llama-server-8082.service
 [Unit]
 Description=Llama.cpp Chandra-OCR Server on Port 8082
 After=network.target
@@ -125,7 +125,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
-ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 16 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
+ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 16 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --flash-attn on --api-key sk-local-ocr --host 0.0.0.0 --port 8082 --alias chandra-ocr
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -157,6 +157,19 @@ systemctl --user list-units | grep llama
 # 批量停止所有服务
 systemctl --user stop llama-server-8080.service
 systemctl --user stop llama-server-8082.service
+
+# 停止并禁用服务
+
+```bash
+# 用户级服务
+systemctl --user stop llama-server.service
+systemctl --user disable llama-server.service
+systemctl --user disable llama-server-8080.service
+systemctl --user disable llama-server-8082.service
+
+# 系统级服务
+sudo systemctl stop llama-server.service
+sudo systemctl disable llama-server.service
 ```
 
 ## 服务配置详解

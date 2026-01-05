@@ -8,31 +8,31 @@
         "type": "tabs",
         "children": [
           {
-            "id": "d4fbb9ce51cabf76",
+            "id": "0e795925e1b9c1f7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Llama.cpp-本地部署接入-n8n与Dify指南"
+            }
+          },
+          {
+            "id": "e5944bcca89b0e35",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "ubuntu-system/llama_cpp_systemd_guide.md",
                 "mode": "source",
-                "source": true
-              },
-              "icon": "lucide-file",
-              "title": "llama_cpp_systemd_guide"
-            }
-          },
-          {
-            "id": "79c01027d97c6fc9",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "llama-cpp/模型部署指令集.md",
-                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "模型部署指令集"
+              "title": "llama_cpp_systemd_guide"
             }
           }
         ],
@@ -199,42 +199,43 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "79c01027d97c6fc9",
+  "active": "e5944bcca89b0e35",
   "lastOpenFiles": [
-    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
-    "llama-cpp/模型部署指令集.md",
-    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
-    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
-    "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
+    "RAGFLOW/知识库文件导出功能集成.md",
+    "RAGFLOW/知识库文件导出.md",
+    "RAGFLOW/export_image_ocr_for_llm.py",
+    "RAGFLOW/RAGFlow图片OCR分块debug.md",
+    "RAGFLOW",
     "ubuntu-system/github-upload-guide.md",
-    "ubuntu-system/ubuntu_uninstall_guide.md",
-    "ubuntu-system",
-    "system/llama_cpp_systemd_guide.md",
-    "rocm/ROCm-GPU显存清理指南.md",
-    "ubuntu-tools/tox_installation_guide.md",
-    "ubuntu-tools",
-    "rocm/ROCm7-卸载与安装指南.md",
-    "docker/Docker-Ollama完全卸载指南.md",
-    "system/ubuntu_uninstall_guide.md",
-    "system",
-    "uninstall_ollama_docker.sh",
-    "docker",
-    "llama-cpp/Docker-Ollama完全卸载指南.md",
-    "llama-cpp/ROCm-GPU显存清理指南.md",
-    "llama-cpp/llama.cpp-MI50-ROCm构建指南.md",
-    "llama-cpp/llama.cpp构建文档-旧版.md",
-    "rocm/AMD MI50 在Ubuntu 24.04下安装驱动和ROCm.md",
-    "windsurf.json",
-    "ROCm 的专用 ollama Docker 镜像.md",
-    "rocm",
-    "docker分步部署vllm模型.md",
-    "llama-cpp/llama.cpp构建文档.md",
-    "Llama.cpp 本地部署与多 GPU 环境配置指南.md",
-    "llama-server.md",
-    "llama-cpp",
-    "emails.md",
-    "2025-11-24.md",
-    "docker分步部署vllm模型.txt"
+    "ubuntu-system/mount_smb_share_guide.md",
+    "ubuntu-system/ubuntu_mount_ntfs_guide.md",
+    "ubuntu-tools/AGENTS.md",
+    "ubuntu-system/frpc-systemd.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "llama-cpp/模型部署指令集.md",
+    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
+    "VPN/魔戒VPN.md",
+    "VPN",
+    "llama-cpp/RAGFlow 重新拉取升级并成功添加本地 OCR.md",
+    "llama-cpp/ragflow-local-ocr-setup-log-2026-01-04.md",
+    "ubuntu-system/Ubuntu部署wecom指南.md",
+    "coding/AGENTS.md",
+    "coding",
+    "新建文件夹",
+    "ubuntu-system/稳定运行配置指南_WeComBot_FRP.md",
+    "llama-cpp/llama.cpp软件版本过低and缓存路径冲突问题.md",
+    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "ubuntu-system/ubuntu_ntfs_desktop_shortcuts_guide.md",
+    "ubuntu-system/linux/ubuntu_ntfs_desktop_shortcuts_guide.md",
+    "ubuntu-system/linux/ubuntu_mount_ntfs_guide.md",
+    "ubuntu-system/linux/mount_smb_share_guide.md",
+    "ubuntu-system/linux",
+    "linux/ubuntu_ntfs_desktop_shortcuts_guide.md",
+    "linux/ubuntu_mount_ntfs_guide.md",
+    "linux",
+    "spec-guides/tools/windsurf",
+    "spec-guides/tools",
+    "spec-guides/steering"
   ]
 }
