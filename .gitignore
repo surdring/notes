@@ -174,3 +174,8 @@ _build/
 # llama.cpp-rocm
 llama.cpp-rocm
 llama.cpp-rocm/*
+
+
+.trash/
+.obsidian/plugins/
+*.zip
