@@ -179,3 +179,5 @@ llama.cpp-rocm/*
 .trash/
 .obsidian/plugins/
 *.zip
+
+.obsidian
