@@ -78,3 +78,4 @@ git ls-files | grep -E '^\.trash/|^\.obsidian/plugins/|\.zip$'
 ## 重要注意事项
 - `git filter-repo` 会 **重写历史**，后续其它机器上的旧克隆仓库建议重新 `git clone`，避免把旧历史带回。
 - 如果未来仍想同步 `.obsidian` 的部分配置，建议只保留你需要的文件，避免同步 `workspace.json` 这类强依赖本机路径/布局的配置（按你的使用习惯决定）。
+

@@ -201,8 +201,13 @@
   },
   "active": "e5944bcca89b0e35",
   "lastOpenFiles": [
-    "git-notes/notes仓库清理与推送.md",
+    "RAGFLOW/RAGFlow 图片解析.md",
+    "mi50_stress",
+    "mi50_stress.tmpf14910e",
+    "rocm/MI50-HIP压力测试-持续10分钟.cpp",
+    "rocm/Linux下MI50推理稳压与锁频指南.md",
     "git-notes/git-log-2026-01-06.md",
+    "git-notes/notes仓库清理与推送.md",
     "git-notes",
     "RAGFLOW/知识库文件导出功能集成.md",
     "RAGFLOW/知识库文件导出.md",
@@ -231,11 +236,6 @@
     "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
     "ubuntu-system/ubuntu_ntfs_desktop_shortcuts_guide.md",
     "ubuntu-system/linux/ubuntu_ntfs_desktop_shortcuts_guide.md",
-    "ubuntu-system/linux/ubuntu_mount_ntfs_guide.md",
-    "ubuntu-system/linux/mount_smb_share_guide.md",
-    "ubuntu-system/linux",
-    "linux",
-    "spec-guides/tools/windsurf",
-    "spec-guides/tools"
+    "ubuntu-system/linux"
   ]
 }
