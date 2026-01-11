@@ -24,6 +24,7 @@ AMD vendor 为 `0x1002`。
 for d in /sys/class/drm/card*/device/vendor; do echo "$d: $(cat $d)"; done
 ```
 
+
 如果输出中出现类似：
 - `/sys/class/drm/card1/device/vendor: 0x1002`
 
@@ -72,6 +73,9 @@ sudo rocm-smi --setpoweroverdrive 160
 cat /sys/class/drm/card1/device/pp_dpm_sclk
 cat /sys/class/drm/card1/device/pp_dpm_mclk
 cat /sys/class/drm/card1/device/power_dpm_force_performance_level
+cat /sys/class/drm/card0/device/pp_dpm_sclk
+cat /sys/class/drm/card0/device/pp_dpm_mclk
+cat /sys/class/drm/card0/device/power_dpm_force_performance_level
 ```
 
 示例输出（不同机器会略有差异）：
@@ -99,8 +103,13 @@ cat /sys/class/drm/card1/device/power_dpm_force_performance_level
 ```bash
 echo manual | sudo tee /sys/class/drm/card1/device/power_dpm_force_performance_level
 
-echo 7 | sudo tee /sys/class/drm/card1/device/pp_dpm_sclk
-echo 2 | sudo tee /sys/class/drm/card1/device/pp_dpm_mclk
+echo 6 | sudo tee /sys/class/drm/card1/device/pp_dpm_sclk
+echo 1 | sudo tee /sys/class/drm/card1/device/pp_dpm_mclk
+
+echo manual | sudo tee /sys/class/drm/card0/device/power_dpm_force_performance_level
+
+echo 6 | sudo tee /sys/class/drm/card0/device/pp_dpm_sclk
+echo 1 | sudo tee /sys/class/drm/card0/device/pp_dpm_mclk
 ```
 
 更保守（更稳、温度更低）的 SCLK：
@@ -144,6 +153,51 @@ cat /sys/class/drm/card1/device/power_dpm_force_performance_level
 ### 6.3 设置后重启失效
 `rocm-smi` 和 sysfs 设置一般都不会永久保存。需要的话可以用 systemd 在开机时自动执行（建议将命令写成脚本并以 root 运行）。
 
+### 6.4 双卡时：rocm-smi GPU[x] 与 /sys/class/drm/cardX 不是同一个编号体系
+
+锁频/限功耗这类 sysfs 操作使用的是 `/sys/class/drm/cardX/...`，而你日常监控经常用的是 `rocm-smi GPU[0]/GPU[1]`。两者编号不保证一致，建议用 PCI Bus 做一次性映射确认：
+
+```bash
+readlink -f /sys/class/drm/card0/device
+readlink -f /sys/class/drm/card1/device
+rocm-smi -i
+```
+
+输出里会出现类似 `.../0000:08:00.0` 的 PCI 地址；将 `readlink` 的 PCI 地址与 `rocm-smi -i` 的 PCI Bus 对上后，再决定对哪个 `cardX` 写入 `pp_dpm_sclk/pp_dpm_mclk`。
+
+### 6.5 多个推理服务绑定到指定 GPU（llama.cpp/hip）
+
+HIP/ROCm 程序通常用 `HIP_VISIBLE_DEVICES` 选择 GPU（例如 `0` 或 `1`）。
+
+- 手动运行示例：
+
+```bash
+HIP_VISIBLE_DEVICES=1 ./build-hip/bin/llama-server ...
+```
+
+- systemd 注意事项：如果你在 `ExecStart` 里使用了 `/usr/bin/env -i` 来构造“干净环境”，那么必须在 `ExecStart` 里显式传入 `HIP_VISIBLE_DEVICES=...`（否则 unit 文件里 `Environment=` 的值可能不会被继承进去）。
+
+- systemd示例
+```bash
+# nano ~/.config/systemd/user/llama-server-8082.service
+[Unit]
+Description=Llama.cpp Chandra-OCR Server on Port 8082
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=1"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+```
 ---
 
 ## 7. 建议的稳态组合（散热一般的推理机器）
