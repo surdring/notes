@@ -164,6 +164,11 @@ git remote set-url origin git@github.com:surdring/LifeStream.git
 git remote -v
 git push
 ```
+
+git remote -v
+git remote set-url origin git@github.com:surdring/notes.git
+git remote -v
+git push
 ---
 
 ## 8. 常见问题排查

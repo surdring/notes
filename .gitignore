@@ -170,6 +170,8 @@ _build/
 *.synctex.gz
 *.toc
 
+.env.example
+.env
 
 # llama.cpp-rocm
 llama.cpp-rocm
