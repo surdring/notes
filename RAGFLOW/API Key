@@ -1,0 +1,28 @@
+API Key：
+ragflow-0606L98nCaYRDA3wrv3_rFd3PUr616rzGfwCgxVw7l8
+
+知识库 ID / Dataset ID：
+cfe4af0ce92c11f08a27e619126175ec
+
+
+文档 ID：
+04beaebce9d411f09e80befbc4591375
+
+
+
+curl -s \
+  -H "Authorization: Bearer ragflow-0606L98nCaYRDA3wrv3_rFd3PUr616rzGfwCgxVw7l8" \
+  "http://127.0.0.1:8088/api/v1/datasets/cfe4af0ce92c11f08a27e619126175ec/documents/04beaebce9d411f09e80befbc4591375/chunks?page=1&page_size=5" | head
+
+
+
+  python3 tools/export_image_ocr_for_llm.py \
+  --base-url http://127.0.0.1:8088/api/v1 \
+  --api-key ragflow-0606L98nCaYRDA3wrv3_rFd3PUr616rzGfwCgxVw7l8 \
+  --dataset-id cfe4af0ce92c11f08a27e619126175ec \
+  --document-id 04beaebce9d411f09e80befbc4591375 \
+  --format llm_md \
+  --out ./txts/wechat_img_ocr.llm.md \
+  --page-size 50 \
+  --timeout 60 \
+  --retries 5

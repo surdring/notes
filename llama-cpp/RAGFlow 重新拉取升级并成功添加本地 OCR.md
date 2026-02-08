@@ -8,7 +8,7 @@
 - RAGFlow 部署方式：Docker Compose
 - Compose 目录：`/home/zhengxueen/workspace/ragflow/docker`
 - 本地 OCR 服务：llama.cpp server（OpenAI-compatible）
-- OCR Base URL：`http://172.16.100.211:8082/v1`
+- OCR Base URL：http://172.16.100.211:8082/v1
 - OCR API Key：`sk-local-ocr`
 - OCR 模型：`chandra-ocr`
 

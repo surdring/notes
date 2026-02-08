@@ -107,6 +107,15 @@ type = "http"
 localIP = "127.0.0.1"
 localPort = 5173
 subdomain = "she"        # 子域名前缀，组合后为 she.tofly.top
+
+# [LifeStream] HTTP 模式：通过 http://lifestream.tofly.top:7080 访问
+# 前端是 Vite (3000)，并且会把 /api 反代到本机后端 8787，所以一般不需要单独暴露 8787
+[[proxies]]
+name = "lifestream_web"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3000
+subdomain = "lifestream"
 ```
 
 ### 2.2 启动客户端
@@ -117,7 +126,59 @@ subdomain = "she"        # 子域名前缀，组合后为 she.tofly.top
 # 或者使用后台服务（如果已配置 systemctl）：
 sudo systemctl restart frpc
 ```
+### 2.3 一套**“一台 frps + 两台 frpc（A/B）”**的标准模板
 
+```shell
+# # 客户机 A：`frpc.toml`（HTTP 子域名 + 可选 TCP）
+serverAddr = "47.96.159.100"
+serverPort = 7700
+
+[auth]
+method = "token"
+token = "PLEASE_CHANGE_ME_TO_A_LONG_RANDOM_TOKEN"
+
+# A 的 LifeStream 前端（Vite 3000）
+[[proxies]]
+name = "client-a-lifestream-web"  # 建议全局唯一：加 client 前缀避免撞名
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3000
+customDomains = ["a.lifestream.tofly.top"]
+
+# （可选）A 的 SSH 暴露（TCP 方式示例）
+[[proxies]]
+name = "client-a-ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6001
+```
+
+```shell
+# 客户机 B：`frpc.toml`（HTTP 子域名 + 可选 TCP）
+
+serverAddr = "47.96.159.100"
+serverPort = 7700
+
+[auth]
+method = "token"
+token = "PLEASE_CHANGE_ME_TO_A_LONG_RANDOM_TOKEN"
+
+[[proxies]]
+name = "client-b-lifestream-web"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3000
+customDomains = ["b.lifestream.tofly.top"]
+
+# （可选）B 的 SSH
+[[proxies]]
+name = "client-b-ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6002
+```
 ---
 
 ## 🛠 3. 本地前端项目适配 (Vite)

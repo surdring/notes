@@ -1,0 +1,34 @@
+PROVIDER_API_KEY=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
+PROVIDER_BASE_URL=https://integrate.api.nvidia.com/v1
+# PROVIDER_MODEL_ID=z-ai/glm4.7
+PROVIDER_MODEL_ID=minimaxai/minimax-m2.1
+# PostgreSQL
+DATABASE_URL=postgresql://postgres:xqxatcdj@172.16.100.211:5432/niche?sslmode=disable
+POSTGRES_MAX_CONNECTIONS=10
+
+# Redis
+REDIS_URL=redis://:infini_rag_flow@172.16.100.211:6381/1
+REDIS_MAX_RETRIES=3
+REDIS_RETRY_BASE_DELAY_MS=1000
+REDIS_CONNECT_TIMEOUT_MS=1000
+
+# Observability
+LOG_LEVEL=info
+
+# LLM
+# LLM_PROFILE=provider
+LLM_PROFILE=llama
+
+# llama-server 监听的是 0.0.0.0:8080，客户端要写“可访问到这台机器的地址”
+# 如果 Niche 跟 llama-server 在同一台机器：用 http://127.0.0.1:8080/v1
+# 如果 llama-server 在局域网/另一台机器：用 http://<那台机器的IP>:8080/v1
+# LLM_LLAMA_BASE_URL=http://172.16.100.211:8082/v1
+LLM_LLAMA_BASE_URL=http://172.16.100.211:8080/v1
+
+# 你的 llama-server 启用了 --api-key，所以这里必须设置（不要填空字符串）
+LLM_LLAMA_API_KEY=sk-local-gpt20b
+# LLM_LLAMA_API_KEY=apikey
+
+# --alias gpt-oss-20b  => 这里就用这个当 modelId
+LLM_LLAMA_MODEL_ID=gpt-oss-20b
+# LLM_LLAMA_MODEL_ID=qwen3-vl

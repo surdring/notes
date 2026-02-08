@@ -65,7 +65,9 @@ systemctl --user stop frpc.service
 systemctl --user disable frpc.service
 
 # 执行：
-
-- `systemctl --user daemon-reload`
-- `systemctl --user enable --now frpc`
+systemctl --user stop frpc.service
+systemctl --user daemon-reload
+systemctl --user enable --now frpc
+systemctl --user status frpc.service
+journalctl --user -u frpc.service -f
 ```

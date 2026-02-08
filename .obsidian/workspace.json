@@ -13,58 +13,44 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
+                "file": "rocm/Linux下MI50推理稳压与锁频指南.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Llama.cpp-本地部署接入-n8n与Dify指南"
+              "title": "Linux下MI50推理稳压与锁频指南"
             }
           },
           {
-            "id": "e5944bcca89b0e35",
+            "id": "3e3396fe15aa2ecd",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "rocm/ROCm-GPU显存清理指南.md",
+                "file": "Nginx/Nginx-安装与使用指南.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ROCm-GPU显存清理指南"
+              "title": "Nginx-安装与使用指南"
             }
           },
           {
-            "id": "1c7cfa6096ff264e",
+            "id": "6b58dfde74c39c4a",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ubuntu-system/llama_cpp_systemd_guide.md",
+                "file": "ubuntu-system/frpc-systemd.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "llama_cpp_systemd_guide"
-            }
-          },
-          {
-            "id": "2b2437143ef75c34",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "llama-cpp/模型部署指令集.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "模型部署指令集"
+              "title": "frpc-systemd"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -121,7 +107,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 349.5
   },
   "right": {
     "id": "879f09582170b7c7",
@@ -217,52 +203,91 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:新建数据库": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
-      "command-palette:打开命令面板": false,
-      "bases:创建新数据库": false
+      "command-palette:打开命令面板": false
     }
   },
-  "active": "2b2437143ef75c34",
+  "floating": {
+    "id": "9478e938c38a6a44",
+    "type": "floating",
+    "children": [
+      {
+        "id": "6459c25b4a70ea9f",
+        "type": "window",
+        "children": [
+          {
+            "id": "2877802ecf605438",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "a8d89034f88ddadc",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "llama-cpp/模型部署指令集.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "icon": "lucide-file",
+                  "title": "模型部署指令集"
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "vertical",
+        "x": 667,
+        "y": 194,
+        "width": 1227,
+        "height": 947,
+        "maximize": false,
+        "zoom": 0
+      }
+    ]
+  },
+  "active": "3e3396fe15aa2ecd",
   "lastOpenFiles": [
-    "ubuntu-system/llama_cpp_systemd_guide.md",
-    "llama-cpp/模型部署指令集.md",
-    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
-    "rocm/ROCm-GPU显存清理指南.md",
-    "RAGFLOW/RAGFlow 图片解析.md",
-    "ubuntu-tools/一键诊断命令.md",
-    "rocm/双MI50显卡信息汇总.md",
-    "RAGFLOW/RAGFlow图片OCR分块debug.md",
-    "RAGFLOW/知识库文件导出功能集成.md",
-    "git-notes/notes仓库清理与推送.md",
-    "git-notes/git-log-2026-01-06.md",
-    "自用工具/启用物料优化存储过程.md",
-    "自用工具/微信应用稳定运行配置指南md",
-    "自用工具/稳定运行配置指南_WeComBot_FRP.md",
-    "自用工具",
-    "nebula7.py",
-    "__pycache__/nebula7.cpython-312.pyc.126397394703104",
-    "__pycache__/nebula7.cpython-312.pyc",
-    "__pycache__",
-    "mi50_stress",
-    "mi50_stress.tmpf14910e",
-    "rocm/MI50-HIP压力测试-持续10分钟.cpp",
-    "rocm/Linux下MI50推理稳压与锁频指南.md",
-    "git-notes",
-    "RAGFLOW/知识库文件导出.md",
-    "ubuntu-system/github-upload-guide.md",
-    "ubuntu-system/mount_smb_share_guide.md",
-    "ubuntu-system/ubuntu_mount_ntfs_guide.md",
-    "ubuntu-tools/AGENTS.md",
+    "openclaw/Brave Search API Key.md",
+    "openclaw/方舟APIkey.md",
+    "git-notes/GITHUB SSH认证推送.md",
     "ubuntu-system/frpc-systemd.md",
-    "VPN/魔戒VPN.md",
-    "llama-cpp/RAGFlow 重新拉取升级并成功添加本地 OCR.md",
-    "llama-cpp/ragflow-local-ocr-setup-log-2026-01-04.md",
-    "ubuntu-system/Ubuntu部署wecom指南.md",
-    "coding/AGENTS.md",
-    "ubuntu-system/稳定运行配置指南_WeComBot_FRP.md"
+    "项目相关文档/LifeStream/README.md",
+    "项目相关文档/LifeStream",
+    "项目相关文档",
+    "ubuntu-system/FRP 内网穿透全流程部署指南.md",
+    "llama-cpp/Llama.cpp-本地部署接入-n8n与Dify指南.md",
+    "openclaw/Discord Bot Token.md",
+    "openclaw",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "指南/工业与AI融合应用落地路线.md",
+    "指南/《工业与AI融合应用指南》通读总结.md",
+    "指南/三层五阶八步方法论.md",
+    "ubuntu-system/云服务器部署TongueInsight应用指南.md",
+    "ubuntu-system/稳定运行配置指南_WeComBot_FRP.md",
+    "指南/面谈指南.md",
+    "指南/面谈指南-背诵稿.md",
+    "vllm/AMD GPU跑vllm-gfx906.md",
+    "llama-cpp/模型部署指令集.md",
+    "ERP/人力资源/NCV6.5培训手册-薪酬管理.md",
+    "ERP/人力资源/NCV6.5培训手册-能力素质管理.md",
+    "ERP/人力资源/NCV6.5培训手册-绩效管理.md",
+    "ERP/人力资源/NCV6.5培训手册-继任与发展管理.md",
+    "ERP/人力资源/NCV6.5培训手册-组织机构管理.md",
+    "ERP/人力资源/NCV6.5培训手册-社保福利.md",
+    "ERP/人力资源/NCV6.5培训手册-时间管理.md",
+    "ERP/人力资源",
+    "ERP/管理会计",
+    "ERP/生产制造",
+    "ERP/财务会计",
+    "ERP/应用集成平台",
+    "ERP/项目管理",
+    "ERP/电子商务"
   ]
 }

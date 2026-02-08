@@ -102,7 +102,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
-Environment="HIP_VISIBLE_DEVICES=1"
+Environment="HIP_VISIBLE_DEVICES=0"
 Environment="GGML_LOG_LEVEL=debug"
 ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-safeguard-20b-Q4_K_M.gguf --ctx-size 65536 --n-gpu-layers -1 --jinja --api-key sk-local-gpt20b --host 0.0.0.0 --port 8080  --alias gpt-oss-20b
 Restart=always
@@ -116,11 +116,11 @@ WantedBy=default.target
 
 ```
 
-#### 服务2: OCR模型 (端口8082)
+#### 服务2-1: OCR模型 (端口8082)
 ```ini
-# nano ~/.config/systemd/user/llama-server-8082.service
+# nano ~/.config/systemd/user/llama-server-8081.service
 [Unit]
-Description=Llama.cpp Chandra-OCR Server on Port 8082
+Description=Llama.cpp Chandra-OCR Server on Port 8081
 After=network.target
 
 [Service]
@@ -141,22 +141,63 @@ WantedBy=default.target
 
 
 ```
-
-#### 服务3: Qwen3-VL模型 (端口8083)
+#### 服务2-2: OCR模型2 (端口8082)
 ```ini
 # nano ~/.config/systemd/user/llama-server-8082.service
 [Unit]
-Description=Llama.cpp Chandra-OCR Server on Port 8082
+Description=Llama.cpp qwen3-vl Server on Port 8082
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
-Environment="HIP_VISIBLE_DEVICES=0"
-Environment="HSA_VISIBLE_DEVICES="
-Environment="ROCR_VISIBLE_DEVICES="
-Environment="CUDA_VISIBLE_DEVICES="
-ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmpr>
+Environment="HIP_VISIBLE_DEVICES=1"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-VL-32B-Instruct/Qwen3-VL-32B-Instruct-UD-Q4_K_XL.gguf --mmproj /mnt/ssd/models/Qwen3-VL-32B-Instruct/mmproj-F16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --jinja --api-key apikey --top-p 0.8 --top-k 20 --temp 0.7 --flash-attn on --host 0.0.0.0 --port 8082 --alias qwen3-vl
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+```
+
+#### 服务3: Qwen3-Embedding-4B模型 (端口8083)
+```ini
+[Unit]
+Description=Llama.cpp Qwen3-Embedding-4B Server on Port 8083
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=1"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-Embedding-4B-Q4_K_M.gguf --reasoning-format deepseek --ctx-size 32684 -n 32768 --n-gpu-layers 999 --threads 8 --jinja --flash-attn auto -sm row --top-p 0.95 --temp 0.6 --top-k 20 --host 0.0.0.0 --no-context-shift --port 8083
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+```
+
+
+
+#### 服务4: Qwen3-Reranker-4B模型 (端口8084)
+```
+[Unit]
+Description=Llama.cpp Qwen3-Reranker-4B Server on Port 8084
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=1"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-Reranker-4B-q4_k_m.gguf --reasoning-format deepseek --ctx-size 32684 -n 32768 --n-gpu-layers -1 --threads 8 --jinja --flash-attn auto -sm row --top-p 0.95 --temp 0.6 --top-k 20 --host 0.0.0.0 --no-context-shift --port 8084
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -178,9 +219,14 @@ systemctl --user daemon-reload
 systemctl --user enable llama-server-8080.service
 systemctl --user enable llama-server-8082.service
 
+systemctl --user enable --now llama-server-8083.service
+systemctl --user enable --now llama-server-8084.service
+
 # 批量启动所有服务
 systemctl --user start llama-server-8080.service
 systemctl --user start llama-server-8082.service
+systemctl --user start llama-server-8083.service
+systemctl --user start llama-server-8084.service
 
 # 查看所有 llama 服务状态
 systemctl --user list-units | grep llama
@@ -191,6 +237,9 @@ systemctl --user stop llama-server-8082.service
 
 systemctl --user status llama-server-8080.service
 systemctl --user status llama-server-8082.service
+systemctl --user status llama-server-8083.service --no-pager
+systemctl --user status llama-server-8084.service --no-pager
+
 
 # 停止并禁用服务
 
@@ -204,11 +253,35 @@ systemctl --user disable llama-server-8082.service
 # 查看日志
 journalctl --user -u llama-server-8080.service -n 100 --no-pager
 journalctl --user -u llama-server-8082.service -n 100 --no-pager
+journalctl --user -u llama-server-8083.service -f
+journalctl --user -u llama-server-8084.service -f
 
 # 系统级服务
 sudo systemctl stop llama-server.service
 sudo systemctl disable llama-server.service
 ```
+
+
+#### 服务5: 多模态模型 (端口8085)
+```ini
+# nano ~/.config/systemd/user/llama-server-8082.service
+[Unit]
+Description=Llama.cpp Chandra-OCR Server on Port 8082
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=1"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
 
 ## 服务配置详解
 
