@@ -52,6 +52,9 @@ sudo nano /etc/fstab
 ```
 # NTFS 分区挂载
 UUID=你的分区UUID  /mnt/ntfs_drive  ntfs-3g  defaults,windows_names,locale=zh_CN.UTF-8  0  0
+
+# 宿舍电脑
+UUID=5016E6F216E6D7CC  /mnt/easystore  ntfs-3g  rw,remove_hiberfile,windows_names,locale=zh_CN.UTF-8,uid=1000,gid=1000,umask=0022  0  0
 ```
 
 > 注意：要获取分区的 UUID，可以使用 `sudo blkid` 命令。
