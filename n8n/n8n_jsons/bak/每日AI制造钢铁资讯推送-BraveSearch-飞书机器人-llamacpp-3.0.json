@@ -1,0 +1,627 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 30
+            }
+          ]
+        }
+      },
+      "id": "ce2b06fd-347b-46d5-a2a0-dddb941491b6",
+      "name": "Cron 08:30",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        -1712,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bf0aa69a-3f21-4c5a-b0ed-fad1fdb3d14f",
+              "name": "braveEndpoint",
+              "type": "string",
+              "value": "=https://api.search.brave.com/res/v1/web/search"
+            },
+            {
+              "id": "bb4d8e1c-f1bb-4bcd-9e1c-7db22f0b04df",
+              "name": "query",
+              "type": "string",
+              "value": "=(\"artificial intelligence\" OR AI OR \"machine learning\" OR LLM) (steel OR \"iron and steel\" OR metallurgical OR \"rolling mill\" OR \"blast furnace\" OR \"continuous casting\") (manufacturing OR plant OR factory OR production)"
+            },
+            {
+              "id": "86f56ab0-a9de-4f4f-b90a-1e6d2304c2b4",
+              "name": "candidateCount",
+              "type": "number",
+              "value": 20
+            },
+            {
+              "id": "c0cfc2bf-d33b-43ee-8c7f-5bb2cb7c5e03",
+              "name": "finalCount",
+              "type": "number",
+              "value": 5
+            },
+            {
+              "id": "f32671fe-14c6-41e5-bf45-5d37c0c5ed1b",
+              "name": "freshness",
+              "type": "string",
+              "value": "=day"
+            },
+            {
+              "id": "4c8ed128-8fba-4c28-b3a9-166a2f44f7b3",
+              "name": "llamaBaseUrl",
+              "type": "string",
+              "value": "={{ $env.LLAMA_CPP_BASE_URL || 'http://127.0.0.1:8080' }}"
+            },
+            {
+              "id": "54a8be62-c1ff-4a22-9d90-f28ca9f3e2b7",
+              "name": "llamaModel",
+              "type": "string",
+              "value": "={{ $env.LLAMA_CPP_MODEL || 'gpt-4o-mini' }}"
+            },
+            {
+              "id": "1f6502bd-b5b0-47fa-9eb7-85116d6a0d33",
+              "name": "feishuWebhookUrl",
+              "type": "string",
+              "value": "={{ $env.FEISHU_BOT_WEBHOOK_URL }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1574c4c-58ed-498b-a20d-4b0bf0ba90d7",
+      "name": "Init Run Config",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1488,
+        128
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\ndata.items = [];\ndata.sent = false;\ndata.sentCount = 0;\nreturn items;"
+      },
+      "id": "b852cf96-6028-4bb3-a251-eabe71d57b06",
+      "name": "Reset Accumulator",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1280,
+        128
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.braveEndpoint }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Subscription-Token",
+              "value": "={{ $env.BRAVE_SEARCH_API_KEY || $env.BRAVE_API_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "count",
+              "value": "={{ $json.candidateCount }}"
+            },
+            {
+              "name": "freshness",
+              "value": "={{ $json.freshness }}"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true,
+          "response": {
+            "responseFormat": "json",
+            "fullResponse": true
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "537dc146-428f-4405-ab2a-83a388a68d06",
+      "name": "Brave Search (freshness=day)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1056,
+        128
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all();\nif (!inputData || inputData.length === 0) return [];\n\nconst cfg = inputData[0].json;\nlet raw = cfg.body || cfg;\nif (Array.isArray(raw)) raw = raw[0] || {};\n\n// 深度探测所有可能的搜索结果路径\nconst res = [\n  ...(raw.web?.results || []),\n  ...(raw.news?.results || []),\n  ...(raw.videos?.results || []),\n  ...(raw.results || []),\n  ...(raw.mixed?.main?.filter(i => i.type === 'web').map(i => raw.web?.results?.[i.index]).filter(Boolean) || [])\n];\n\nfunction normalizeUrl(u) {\n  if (!u) return '';\n  try {\n    const url = new URL(u);\n    url.hash = '';\n    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(k => url.searchParams.delete(k));\n    url.search = url.searchParams.toString() ? '?' + url.searchParams.toString() : '';\n    return url.toString();\n  } catch (e) {\n    return u;\n  }\n}\n\nconst seen = new Set();\nconst out = [];\nfor (const r of res) {\n  if (!r || !r.url) continue;\n  const url = normalizeUrl(r.url);\n  if (!url || seen.has(url)) continue;\n  seen.add(url);\n\n  out.push({\n    title: r.title || 'Untitled',\n    url,\n    description: r.description || r.snippet || '',\n    page_age: r.page_age || r.age || null,\n    source: r.profile?.name || r.source || null,\n    query: cfg.query,\n    llamaBaseUrl: cfg.llamaBaseUrl,\n    llamaModel: cfg.llamaModel,\n    feishuWebhookUrl: cfg.feishuWebhookUrl,\n    finalCount: cfg.finalCount || 5\n  });\n}\n\n// 必须保证输出不为空，否则工作流会在这里中断\nif (out.length === 0) {\n  return [{\n    json: {\n      title: 'No results found',\n      url: 'https://api.search.brave.com',\n      description: 'Brave Search returned no results for the current query and freshness.',\n      query: cfg.query,\n      llamaBaseUrl: cfg.llamaBaseUrl,\n      llamaModel: cfg.llamaModel,\n      feishuWebhookUrl: cfg.feishuWebhookUrl,\n      finalCount: cfg.finalCount || 5,\n      skipProcessing: true\n    }\n  }];\n}\n\nreturn out.slice(0, 15).map(j => ({ json: j }));"
+      },
+      "id": "bab3ac2f-73e6-4527-87bb-87d1e656cdf4",
+      "name": "Pick Candidates",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -832,
+        128
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "472601a0-4016-4269-8a84-d5f42d7fd659",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -608,
+        128
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "alwaysOutputData": true,
+          "ignoreResponseCode": true,
+          "response": {
+            "responseFormat": "text",
+            "fullResponse": true
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "b5ee9c73-50e8-40b4-af48-16d6d5e0c051",
+      "name": "Fetch Article (direct)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -400,
+        48
+      ],
+      "continueOnFail": true,
+      "retryOnFail": false,
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nlet bodyStr = '';\nif (typeof input.body === 'string') {\n  bodyStr = input.body;\n} else if (input.body && typeof input.body === 'object') {\n  bodyStr = JSON.stringify(input.body);\n} else if (input.data && typeof input.data === 'string') {\n  bodyStr = input.data;\n} else if (input.data && typeof input.data === 'object') {\n  bodyStr = JSON.stringify(input.data);\n}\n\nconst status = input.statusCode || 0;\n\nconst needFallback = \n  status !== 200 || \n  !bodyStr || \n  bodyStr.length < 800 || \n  bodyStr.includes('_cf_chl_opt') || \n  bodyStr.includes('Cloudflare') || \n  bodyStr.includes('Forbidden') ||\n  bodyStr.includes('Just a moment...') ||\n  bodyStr.includes('Enable JavaScript') ||\n  bodyStr.includes('challenge-platform');\n\nreturn { \n  needFallback \n};"
+      },
+      "id": "7e6e69df-b1d6-4b93-aae4-3a47557303ac",
+      "name": "Check Fallback Needed",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -176,
+        48
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://r.jina.ai/http://' + $node[\"Split In Batches\"].json.url.replace(/^https?:\\/\\//i, '') }}",
+        "options": {
+          "ignoreResponseCode": true,
+          "response": {
+            "responseFormat": "text",
+            "fullResponse": true
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "c8ee67bc-0979-4c78-ac34-59b64e1c46bc",
+      "name": "Fetch Article (jina.ai)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        48,
+        -64
+      ],
+      "continueOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const splitNode = $node[\"Split In Batches\"].json;\nconst base = $input.first().json;\n\nlet body = base.body || base.data || '';\nif (typeof body !== 'string') body = JSON.stringify(body);\n\nreturn [{\n  json: {\n    title: splitNode.title || '无标题',\n    url: splitNode.url,\n    description: splitNode.description,\n    source: splitNode.source,\n    page_age: splitNode.page_age,\n    articleText: body.slice(0, 30000),\n    llamaBaseUrl: splitNode.llamaBaseUrl,\n    llamaModel: splitNode.llamaModel,\n    feishuWebhookUrl: splitNode.feishuWebhookUrl,\n    finalCount: splitNode.finalCount\n  }\n}];"
+      },
+      "id": "62deeb0c-b51e-47d1-9807-56c47784fe40",
+      "name": "Select Article Text",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        272,
+        48
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Init Run Config'].json.llamaBaseUrl.replace(/\\/$/, '') + '/v1/chat/completions' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + ($env.LLAMA_CPP_API_KEY || 'sk-local-gpt20b') }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "={{ $node['Init Run Config'].json.llamaModel }}"
+            },
+            {
+              "name": "messages",
+              "value": "={{ [{\n  \"role\": \"system\",\n  \"content\": \"你是一个专业的翻译与工业技术编辑。请把输入的英文/多语言正文翻译成中文，保留原文结构（分段/小标题/列表），但不要输出目录锚点、不要添加无关内容。输出只需要中文译文正文，不要 JSON，不要代码块。\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"请将以下文章正文翻译为中文。\\n\\n标题：\" + $json.title + \"\\n链接：\" + $json.url + \"\\n\\n正文：\\n\" + $json.articleText\n}] }}"
+            },
+            {
+              "name": "temperature",
+              "value": 0.2
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true,
+          "response": {
+            "responseFormat": "json"
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "da0ff4e7-5e94-4c2d-a7ab-ae43c34e6510",
+      "name": "LLM: Translate + Analyze",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        496,
+        48
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst targetCount = Number($node['Init Run Config'].json.finalCount || 5);\n\nif (typeof data.sentCount !== 'number') data.sentCount = 0;\n\nconst resp = $input.first()?.json || {};\nconst llama = $node['LLM: Translate + Analyze']?.json || {};\nlet translation = llama?.choices?.[0]?.message?.content || '';\nif (typeof translation !== 'string') translation = JSON.stringify(translation || '');\ntranslation = translation.trim();\n\nconst okTranslation = Boolean(translation);\nconst okFeishu = (resp.StatusCode === 0) || (resp.code === 0) || (resp.ok === true) || (resp.success === true);\n\nif (okTranslation && okFeishu) {\n  data.sentCount += 1;\n}\n\nconst currentCount = data.sentCount;\nconst reachedTarget = currentCount >= targetCount;\n\nreturn [{ json: { reachedTarget, currentCount, targetCount, okTranslation, okFeishu } }];"
+      },
+      "id": "613eca35-433c-4236-b982-b8514da948f7",
+      "name": "Accumulate Result",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        720,
+        48
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.reachedTarget }}",
+              "operation": "notEqual",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "c2a43f6b-e92d-4f23-a8dc-3cf0a2d5c90e",
+      "name": "Reached Target?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        944,
+        48
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { shouldSend: false } }];"
+      },
+      "id": "7a91c5f4-5a87-41e4-8b11-7ad8e7191902",
+      "name": "Should Send At End",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -560,
+        336
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.shouldSend }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "dc480f7c-3484-49ad-9ca8-ae45d6ff2f1f",
+      "name": "Send At End?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -400,
+        336
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $node['Select Article Text'].json;\nconst resp = $node['LLM: Translate + Analyze'].json;\n\nlet translation = resp?.choices?.[0]?.message?.content || '';\nif (typeof translation !== 'string') translation = JSON.stringify(translation || '');\ntranslation = translation.trim();\n\nfunction safe(s) {\n  return (s || '').toString().trim();\n}\n\nfunction clip(s, maxLen) {\n  const t = safe(s);\n  if (!t) return '';\n  if (t.length <= maxLen) return t;\n  return t.slice(0, maxLen) + '\\n\\n（内容过长已截断，详见原文链接）';\n}\n\nconst title = safe(base.title) || '无标题';\nconst url = safe(base.url);\nconst src = safe(base.source);\nconst age = safe(base.page_age);\n\nconst lines = [];\nlines.push('标题：' + title);\nif (src) lines.push('来源：' + src);\nif (age) lines.push('时间：' + age);\nif (url) lines.push('链接：' + url);\nif (translation) lines.push('\\n' + clip(translation, 12000));\n\nreturn [{ json: { text: lines.join('\\n') } }];"
+      },
+      "id": "52b5fc0f-c01c-4886-89ba-316931e6cd48",
+      "name": "Format Single Message",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -400,
+        336
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Init Run Config'].json.feishuWebhookUrl || $env.FEISHU_BOT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "msg_type",
+              "value": "post"
+            },
+            {
+              "name": "content",
+              "value": "={{ {\n  \"post\": {\n    \"zh_cn\": {\n      \"title\": \"每日 AI × 钢铁/制造 资讯日报\",\n      \"content\": [\n        [\n          {\n            \"tag\": \"text\",\n            \"text\": $json.text\n          }\n        ]\n      ]\n    }\n  }\n} }}"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true,
+          "response": {
+            "responseFormat": "json"
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "56f738f1-1f94-49bb-b9e2-ff8ca6a0123d",
+      "name": "Send to Feishu Bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -176,
+        336
+      ],
+      "continueOnFail": true,
+      "typeVersion": 4.2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron 08:30": {
+      "main": [
+        [
+          {
+            "node": "Init Run Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send At End": {
+      "main": [
+        [
+          {
+            "node": "Send At End?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send At End?": {
+      "main": [
+        [
+          {
+            "node": "Format Final Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Init Run Config": {
+      "main": [
+        [
+          {
+            "node": "Reset Accumulator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Accumulator": {
+      "main": [
+        [
+          {
+            "node": "Brave Search (freshness=day)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brave Search (freshness=day)": {
+      "main": [
+        [
+          {
+            "node": "Pick Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Candidates": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Fetch Article (direct)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article (direct)": {
+      "main": [
+        [
+          {
+            "node": "Check Fallback Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Fallback Needed": {
+      "main": [
+        [
+          {
+            "node": "Fetch Article (jina.ai)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Select Article Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article (jina.ai)": {
+      "main": [
+        [
+          {
+            "node": "Select Article Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Article Text": {
+      "main": [
+        [
+          {
+            "node": "LLM: Translate + Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Translate + Analyze": {
+      "main": [
+        [
+          {
+            "node": "Format Single Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Single Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Feishu Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Feishu Bot": {
+      "main": [
+        [
+          {
+            "node": "Accumulate Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accumulate Result": {
+      "main": [
+        [
+          {
+            "node": "Reached Target?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reached Target?": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e9c86334-3487-48d3-acd6-b97ce7c88383",
+  "meta": {
+    "instanceId": "0925cafa17dcf33bbc8b45f4baef0989d4bd0b71475297cbaaf574cc1a4f5e94"
+  },
+  "id": "DTcfToPAz2TCt5PK",
+  "tags": []
+}

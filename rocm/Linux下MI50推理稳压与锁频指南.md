@@ -122,6 +122,8 @@ echo 6 | sudo tee /sys/class/drm/card1/device/pp_dpm_sclk
 echo 1 | sudo tee /sys/class/drm/card1/device/pp_dpm_mclk
 ```
 
+
+
 ---
 
 ## 5. 验证是否生效
@@ -139,7 +141,106 @@ cat /sys/class/drm/card1/device/power_dpm_force_performance_level
 - `sclk clock level` 不再频繁冲到最高档
 - `junction` 更平稳
 
----
+创建一个Systemd服务来封装这些AMD GPU功耗控制命令
+
+```
+[Unit]
+Description=AMD GPU Power Limit and DPM Lock for MI50
+After=systemd-modules-load.service
+Wants=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# 设置 card1 功耗限制为 180W
+ExecStart=/usr/bin/rocm-smi --setpoweroverdrive 180 -d 1
+
+# card1: 强制 manual 模式
+ExecStart=/bin/sh -c 'echo manual > /sys/class/drm/card1/device/power_dpm_force_performance_level'
+
+# card1: 锁定 DPM sclk 档位 6
+ExecStart=/bin/sh -c 'echo 6 > /sys/class/drm/card1/device/pp_dpm_sclk'
+
+# card1: 锁定 DPM mclk 档位 1
+ExecStart=/bin/sh -c 'echo 1 > /sys/class/drm/card1/device/pp_dpm_mclk'
+
+# card0: 强制 manual 模式
+ExecStart=/bin/sh -c 'echo manual > /sys/class/drm/card0/device/power_dpm_force_performance_level'
+
+# card0: 锁定 DPM sclk 档位 6
+ExecStart=/bin/sh -c 'echo 6 > /sys/class/drm/card0/device/pp_dpm_sclk'
+
+# card0: 锁定 DPM mclk 档位 1
+ExecStart=/bin/sh -c 'echo 1 > /sys/class/drm/card0/device/pp_dpm_mclk'
+
+# 恢复命令（服务停止时）
+ExecStop=/bin/sh -c 'echo auto > /sys/class/drm/card0/device/power_dpm_force_performance_level'
+ExecStop=/bin/sh -c 'echo auto > /sys/class/drm/card1/device/power_dpm_force_performance_level'
+ExecStop=/usr/bin/rocm-smi --resetpoweroverdrive
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+```
+# 1. 复制服务文件到 systemd 目录
+sudo cp /home/zhengxueen/workspace/bot/amd-gpu-power-limit.service /etc/systemd/system/
+
+# 2. 重载 systemd
+sudo systemctl daemon-reload
+
+# 3. 立即启动并设为开机自启
+sudo systemctl enable --now amd-gpu-power-limit.service
+
+# 4. 查看状态确认
+sudo systemctl status amd-gpu-power-limit.service
+
+**说明**：
+
+- `Type=oneshot`：一次性执行，适合配置类任务  
+- `RemainAfterExit=yes`：保持active状态以便`ExecStop`在停止服务时正确恢复
+- 停止服务时会自动恢复 `auto` 模式和重置功耗限制
+
+```
+```
+# one GPU
+[Unit]
+Description=AMD GPU Power Limit and DPM Lock for MI50 (card1)
+After=systemd-modules-load.service
+Wants=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# MI50 (card1) 功耗与频率限制
+# 已识别: card1=AMD(0x1002), card2=NVIDIA(0x10de)
+
+# 1. 设置manual模式（必须先执行）
+ExecStart=/bin/sh -c 'echo manual > /sys/class/drm/card1/device/power_dpm_force_performance_level'
+
+# 2. 锁定sclk到level 6 (1386MHz) - 需在manual模式下
+ExecStart=/bin/sh -c 'echo 6 > /sys/class/drm/card1/device/pp_dpm_sclk'
+
+# 3. 锁定mclk到level 1 (800MHz) - 需在manual模式下
+ExecStart=/bin/sh -c 'echo 1 > /sys/class/drm/card1/device/pp_dpm_mclk'
+
+# 4. 设置功耗限制180W (rocm-smi中AMD GPU索引为0)
+ExecStart=/usr/bin/rocm-smi --setpoweroverdrive 180 -d 0
+
+# 恢复命令（服务停止时）
+ExecStop=/bin/sh -c 'echo auto > /sys/class/drm/card1/device/power_dpm_force_performance_level'
+ExecStop=/usr/bin/rocm-smi --resetpoweroverdrive -d 0
+
+[Install]
+WantedBy=multi-user.target
+
+
+```
+
+
 
 ## 6. 常见问题
 ### 6.1 `rocm-smi --showsclk/--showmclk` 提示 Not supported

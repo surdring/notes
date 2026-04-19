@@ -63,3 +63,10 @@ trigger: always
 5. **自动化验收原则（强制）**
    - 每个任务的 Verification 优先写成**可自动化断言**（单元/集成/契约测试），避免仅“手工目测”。
    - 契约相关（GraphQL/REST/Events/Streaming/Citation/Error）一律以 `specs/study-copilot/design/design-contracts.md` 为准，并使用 Zod schema 做断言。
+
+### 文档生成失败处理：
+
+  - 操作失败已被中止，在对话框中完整显示内容
+
+  - 内容必须完整，包含所有审查维度和结论
+

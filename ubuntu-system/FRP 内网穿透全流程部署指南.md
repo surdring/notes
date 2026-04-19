@@ -91,31 +91,55 @@ log.maxDays = 3
 auth.method = "token"
 auth.token = "aliyun2025"
 
-# [隧道1] TCP 模式：通过 http://IP:8080 访问
-# 避开了浏览器封锁的 6000 端口
 [[proxies]]
-name = "tongue_insight_tcp"
+name = "gpt-oss-20b"
 type = "tcp"
-localIP = "127.0.0.1"    # 强制指向本机回环地址
-localPort = 5173         # 本地 Vite 端口
-remotePort = 8080        # 云服务器对外暴露的端口
+localIP = "127.0.0.1"
+localPort = 8080
+remotePort = 8080
 
-# [隧道2] HTTP 模式：通过 http://she.tofly.top:7080 访问
+[[proxies]]
+name = "Qwen3.5-35B-A3B"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8083
+remotePort = 8083
+
 [[proxies]]
 name = "she_web"
 type = "http"
-localIP = "127.0.0.1"
+localIP = "127.0.0.1" 
 localPort = 5173
-subdomain = "she"        # 子域名前缀，组合后为 she.tofly.top
+subdomain = "she"
 
-# [LifeStream] HTTP 模式：通过 http://lifestream.tofly.top:7080 访问
-# 前端是 Vite (3000)，并且会把 /api 反代到本机后端 8787，所以一般不需要单独暴露 8787
 [[proxies]]
 name = "lifestream_web"
 type = "http"
-localIP = "127.0.0.1"
-localPort = 3000
+localIP = "127.0.0.1" 
+localPort = 3001
 subdomain = "lifestream"
+
+[[proxies]]
+name = "wecombot"
+type = "http"
+localIP = "127.0.0.1" 
+localPort = 8001
+subdomain = "wecombot"
+
+[[proxies]]
+name = "she_web_https"
+type = "https"
+subdomain = "she" 
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "127.0.0.1:5173"
+
+crtPath = "/home/zhengxueen/frp/she.tofly.top.pem"
+keyPath = "/home/zhengxueen/frp/she.tofly.top.key"
+hostHeaderRewrite = "she.tofly.top"
+
+
 ```
 
 ### 2.2 启动客户端

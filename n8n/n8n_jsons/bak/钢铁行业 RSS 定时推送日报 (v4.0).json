@@ -1,0 +1,708 @@
+{
+  "name": "钢铁行业 RSS 定时推送日报 (v4.0)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 30
+            }
+          ]
+        }
+      },
+      "id": "86968c1f-7e2e-4f9f-bd64-629219119d15",
+      "name": "Cron 08:30",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        -2896,
+        -304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4c8ed128-8fba-4c28-b3a9-166a2f44f7b3",
+              "name": "llamaBaseUrl",
+              "type": "string",
+              "value": "={{ $env.LLAMA_CPP_BASE_URL || 'http://127.0.0.1:8080' }}"
+            },
+            {
+              "id": "54a8be62-c1ff-4a22-9d90-f28ca9f3e2b7",
+              "name": "llamaModel",
+              "type": "string",
+              "value": "={{ $env.LLAMA_CPP_MODEL || 'gpt-4o-mini' }}"
+            },
+            {
+              "id": "1f6502bd-b5b0-47fa-9eb7-85116d6a0d33",
+              "name": "feishuWebhookUrl",
+              "type": "string",
+              "value": "={{ $env.FEISHU_BOT_WEBHOOK_URL }}"
+            },
+            {
+              "id": "86f56ab0-a9de-4f4f-b90a-1e6d2304c2b4",
+              "name": "finalCount",
+              "type": "number",
+              "value": 10
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aaceaf21-34d8-4e05-9523-24c87ed738ac",
+      "name": "Init Run Config",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2672,
+        -304
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\n\n// 最近 30 天内已推送的 URL：{ [url]: epochMs }\nif (!data.sentUrls || typeof data.sentUrls !== 'object') data.sentUrls = {};\n\n// 本次运行计数\ndata.runSentCount = 0;\n\n// 清理过期记录（30 天）\nconst now = Date.now();\nconst retentionMs = 30 * 24 * 60 * 60 * 1000;\nfor (const [u, ts] of Object.entries(data.sentUrls)) {\n  if (!ts || (now - Number(ts)) > retentionMs) {\n    delete data.sentUrls[u];\n  }\n}\n\nreturn items;"
+      },
+      "id": "54a02902-eeb3-4587-8060-4bb09f6dcb4b",
+      "name": "Reset Run State",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2544,
+        -304
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "https://worldsteel.org/feed/",
+        "options": {}
+      },
+      "id": "4b6301fa-0e27-4002-beff-c0bcc1809736",
+      "name": "World Steel Association",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -2464,
+        -432
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "https://rsshub.app/weibo/user/1655030432",
+        "options": {}
+      },
+      "id": "01a22bc0-5051-4124-ad49-c8551a2b8b39",
+      "name": "Mysteel (Weibo via RSSHub)",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -2464,
+        -272
+      ],
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://rss.feedspot.com/infiniterss.php?_src=feed_title&followfeedid=5204740&q=site:https%3A%2F%2Fworldsteel.org%2Ffeed%2F",
+        "options": {}
+      },
+      "id": "65cc1069-91ab-47a7-9391-b157df2de0e9",
+      "name": "SteelHome (Weibo via RSSHub)",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -2464,
+        -96
+      ],
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://huggingface.co/blog/feed.xml",
+        "options": {}
+      },
+      "id": "64640ff7-f65d-434a-8626-4e815964b0a1",
+      "name": "Hugging Face Blog",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -2464,
+        80
+      ],
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.marktechpost.com/feed/",
+        "options": {}
+      },
+      "id": "3e3a0978-7955-4906-888d-e6880ce55895",
+      "name": "MarkTechPost",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        -2464,
+        240
+      ],
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst data = $getWorkflowStaticData('global');\nconst cfg = $node[\"Init Run Config\"].json;\n\nconst now = Date.now();\nconst windowMs = 48 * 60 * 60 * 1000;\nconst cutoff = now - windowMs;\n\nfunction pickDate(r) {\n  const v = r.isoDate || r.pubDate || r.published || r.date || r.updated || null;\n  if (!v) return null;\n  const t = new Date(v).getTime();\n  if (!Number.isFinite(t)) return null;\n  return t;\n}\n\nfunction normalizeUrl(u) {\n  if (!u) return '';\n  try {\n    const url = new URL(u);\n    url.hash = '';\n    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(k => url.searchParams.delete(k));\n    url.search = url.searchParams.toString() ? '?' + url.searchParams.toString() : '';\n    return url.toString();\n  } catch (e) {\n    return (u || '').toString().trim();\n  }\n}\n\nfunction containsAny(text, words) {\n  const t = (text || '').toString().toLowerCase();\n  if (!t) return false;\n  return words.some(w => t.includes(w));\n}\n\nconst aiKeywords = [\n  'ai', 'artificial intelligence', 'machine learning', 'deep learning',\n  'llm', 'large language model', 'gpt', 'transformer', 'rag',\n  '人工智能', '机器学习', '深度学习', '大模型', '多模态', '智能体', 'agent'\n];\n\nconst steelKeywords = [\n  'steel', 'iron', 'metallur', 'blast furnace', 'rolling', 'rebar', 'scrap', 'iron ore',\n  '钢', '钢铁', '铁矿', '焦炭', '高炉', '炼钢', '热轧', '冷轧', '螺纹', '废钢'\n];\n\nconst seenThisRun = new Set();\nconst candidates = [];\n\nfor (const item of allItems) {\n  const r = item.json || {};\n\n  const title = (r.title || '').toString();\n  const desc = (r.contentSnippet || r.content || r.description || '').toString();\n\n  const okTopic = true;\n  if (!okTopic) continue;\n\n  const url = normalizeUrl(r.link || r.url);\n  if (!url) continue;\n\n  if (seenThisRun.has(url)) continue;\n  seenThisRun.add(url);\n\n  if (data.sentUrls && data.sentUrls[url]) continue;\n\n  let ts = pickDate(r);\n  const dateMissing = !ts;\n  if (!ts) ts = now;\n\n  if (!dateMissing && ts < cutoff) continue;\n\n  candidates.push({\n    noUpdates: false,\n    title: title || '无标题',\n    url,\n    description: desc,\n    source: r.source || r.creator || r.author || 'RSS Feed',\n    publishedAt: ts,\n    dateMissing,\n    llamaBaseUrl: cfg.llamaBaseUrl,\n    llamaModel: cfg.llamaModel,\n    feishuWebhookUrl: cfg.feishuWebhookUrl,\n    finalCount: cfg.finalCount\n  });\n}\n\nif (candidates.length === 0) {\n  return [{\n    json: {\n      noUpdates: true,\n      title: 'AI/钢铁资讯：48h 内无新增',\n      source: 'RSS Aggregator',\n      summary: '过去 48 小时内没有筛选到可推送的新条目（可能因为源更新慢、关键词过滤未命中，或已推送去重命中）。',\n      url: 'https://worldsteel.org/'\n    }\n  }];\n}\n\n// 排序：有日期的优先，其次按时间从新到旧\ncandidates.sort((a, b) => {\n  if (a.dateMissing !== b.dateMissing) return a.dateMissing ? 1 : -1;\n  return (b.publishedAt || 0) - (a.publishedAt || 0);\n});\n\nreturn candidates.slice(0, 20).map(j => ({ json: j }));"
+      },
+      "id": "dd6bd98f-5593-45a2-8461-0dbee7b4f579",
+      "name": "Merge & Deduplicate",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2240,
+        -272
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3593cdd3-5dca-4e4d-af01-bb8bc1e5ed85",
+              "leftValue": "={{ $json.noUpdates }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3586a89f-1e79-4005-ad1b-fc304e6ff3c5",
+      "name": "No Updates?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2080,
+        -416
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "45d2a386-5005-466e-b43b-a39f2186fcb3",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -1920,
+        -96
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FEISHU_BOT_WEBHOOK_URL || $items('Init Run Config')[0].json.feishuWebhookUrl }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "msg_type",
+              "value": "interactive"
+            },
+            {
+              "name": "card",
+              "value": "={{ {\n  \"config\": {\n    \"wide_screen_mode\": true\n  },\n  \"header\": {\n    \"title\": {\n      \"tag\": \"plain_text\",\n      \"content\": $json.title\n    }\n  },\n  \"elements\": [\n    {\n      \"tag\": \"div\",\n      \"text\": {\n        \"tag\": \"lark_md\",\n        \"content\": ( $json.source ? ('**来源**：' + $json.source + '\\n') : '' ) + '**说明**：' + $json.summary\n      }\n    }\n  ]\n} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bfcf1cac-1ca5-4e86-9064-ec0c3502c5e9",
+      "name": "Send No Updates Card",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2016,
+        272
+      ],
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://r.jina.ai/' + $json.url }}",
+        "options": {
+          "response": {},
+          "timeout": 60000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "id": "d7eca661-7cf2-46e0-b18d-c20a90e0728f",
+      "name": "Fetch Content (jina.ai)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1728,
+        -528
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const splitNode = $node[\"Split In Batches\"].json;\nconst jinaRes = $node[\"Fetch Content (jina.ai)\"].json;\n\n// 优先使用 jina.ai 抓取的正文，如果抓取失败或为空，回退使用 RSS 摘要\nlet body = jinaRes.body || jinaRes.data || '';\nif (typeof body !== 'string') body = JSON.stringify(body);\n\nif (!body || body.length < 100) {\n  body = splitNode.description || '';\n}\n\nreturn [{\n  json: {\n    ...splitNode,\n    articleText: body.slice(0, 20000)\n  }\n}];"
+      },
+      "id": "7e0e776f-7917-4a82-aab3-281dd561d6fc",
+      "name": "Prepare LLM Data",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1584,
+        -272
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ (() => { const b = ($json.llamaBaseUrl || $env.LLAMA_CPP_BASE_URL || 'http://127.0.0.1:8080').toString(); const base = b.endsWith('/') ? b.slice(0, -1) : b; return base + '/v1/chat/completions'; })() }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + ($env.LLAMA_CPP_API_KEY || 'sk-local-gpt20b') }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "={{ $json.llamaModel || $env.LLAMA_CPP_MODEL || 'gpt-4o-mini' }}"
+            },
+            {
+              "name": "messages",
+              "value": "={{ [{\n  \"role\": \"system\",\n  \"content\": \"你是一个专业的钢铁行业分析师。请对输入的文章进行摘要，提取核心行情动向、价格变化、政策影响或技术创新点。请用中文输出，保持简洁，不要输出无关内容。\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"标题：\" + $json.title + \"\\n链接：\" + $json.url + \"\\n内容：\" + $json.articleText\n}] }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "a5e81ee3-aa68-4f6d-b4d8-8a850b69d165",
+      "name": "LLM: Analyze RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1360,
+        -272
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $node['Split In Batches'].json;\nconst resp = $node['LLM: Analyze RSS'].json;\n\nlet summary = resp?.choices?.[0]?.message?.content || '解析失败';\nif (typeof summary !== 'string') summary = JSON.stringify(summary || '');\nsummary = summary.trim();\n\nreturn [{\n  json: {\n    title: base.title || '无标题',\n    url: base.url,\n    source: base.source || 'RSS Feed',\n    summary\n  }\n}];"
+      },
+      "id": "0ce94e6c-e2ae-48ef-9eae-4260dedd5d1e",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1136,
+        -272
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FEISHU_BOT_WEBHOOK_URL || $items('Init Run Config')[0].json.feishuWebhookUrl }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "msg_type",
+              "value": "interactive"
+            },
+            {
+              "name": "card",
+              "value": "={{ {\n  \"config\": {\n    \"wide_screen_mode\": true\n  },\n  \"header\": {\n    \"title\": {\n      \"tag\": \"plain_text\",\n      \"content\": $json.title\n    }\n  },\n  \"elements\": [\n    {\n      \"tag\": \"div\",\n      \"text\": {\n        \"tag\": \"lark_md\",\n        \"content\": ( $json.source ? ('**来源**：' + $json.source + '\\n') : '' ) + '**摘要**：' + $json.summary\n      }\n    },\n    {\n      \"tag\": \"action\",\n      \"actions\": [\n        {\n          \"tag\": \"button\",\n          \"text\": {\n            \"tag\": \"plain_text\",\n            \"content\": \"阅读原文\"\n          },\n          \"type\": \"primary\",\n          \"url\": $json.url\n        }\n      ]\n    }\n  ]\n} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "97393a66-fa62-451e-9ae1-585da47ea999",
+      "name": "Send to Feishu",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -912,
+        -272
+      ],
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "bde367ea-9ec2-49ef-98ce-3e98603ec670",
+      "name": "Wait (Feishu Throttle)",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -688,
+        -96
+      ],
+      "typeVersion": 1,
+      "webhookId": "29a07506-32ee-4c2f-ad64-a4058685dcfc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst cfg = $items('Init Run Config')[0].json;\nconst base = $node['Split In Batches'].json;\n\nconst url = (base?.url || '').toString().trim();\nconst now = Date.now();\n\nif (!data.sentUrls || typeof data.sentUrls !== 'object') data.sentUrls = {};\nif (typeof data.runSentCount !== 'number') data.runSentCount = 0;\n\nif (url) data.sentUrls[url] = now;\n\ndata.runSentCount += 1;\nconst reachedTarget = data.runSentCount >= (cfg.finalCount || 5);\n\nreturn [{ json: { reachedTarget } }];"
+      },
+      "id": "d1a96df6-f2a6-4af8-8799-a59187c35da5",
+      "name": "Check Progress",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -688,
+        -272
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e4f2c570-3a95-4553-b4c5-353952f09f5f",
+              "leftValue": "={{ $json.reachedTarget }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e41ebc04-a4bd-4366-a13c-ba561205eba3",
+      "name": "Reached Target?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -448,
+        -272
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "return items;"
+      },
+      "id": "56bd9157-563f-413c-94d1-421d170d138d",
+      "name": "Done",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -448,
+        288
+      ],
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron 08:30": {
+      "main": [
+        [
+          {
+            "node": "Init Run Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Run Config": {
+      "main": [
+        [
+          {
+            "node": "Reset Run State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Run State": {
+      "main": [
+        [
+          {
+            "node": "World Steel Association",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mysteel (Weibo via RSSHub)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SteelHome (Weibo via RSSHub)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Hugging Face Blog",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MarkTechPost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "World Steel Association": {
+      "main": [
+        [
+          {
+            "node": "Merge & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mysteel (Weibo via RSSHub)": {
+      "main": [
+        [
+          {
+            "node": "Merge & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SteelHome (Weibo via RSSHub)": {
+      "main": [
+        [
+          {
+            "node": "Merge & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Blog": {
+      "main": [
+        [
+          {
+            "node": "Merge & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MarkTechPost": {
+      "main": [
+        [
+          {
+            "node": "Merge & Deduplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge & Deduplicate": {
+      "main": [
+        [
+          {
+            "node": "No Updates?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Updates?": {
+      "main": [
+        [
+          {
+            "node": "Send No Updates Card",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send No Updates Card": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Content (jina.ai)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Content (jina.ai)": {
+      "main": [
+        [
+          {
+            "node": "Prepare LLM Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare LLM Data": {
+      "main": [
+        [
+          {
+            "node": "LLM: Analyze RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Analyze RSS": {
+      "main": [
+        [
+          {
+            "node": "Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Feishu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Feishu": {
+      "main": [
+        [
+          {
+            "node": "Wait (Feishu Throttle)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Feishu Throttle)": {
+      "main": [
+        [
+          {
+            "node": "Check Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Progress": {
+      "main": [
+        [
+          {
+            "node": "Reached Target?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reached Target?": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 600,
+    "availableInMCP": false
+  },
+  "versionId": "3c5cb4e8-f193-44c6-b902-07ac199c1644",
+  "meta": {
+    "instanceId": "0925cafa17dcf33bbc8b45f4baef0989d4bd0b71475297cbaaf574cc1a4f5e94"
+  },
+  "id": "nzr3ubZwKcDMYSdD",
+  "tags": []
+}

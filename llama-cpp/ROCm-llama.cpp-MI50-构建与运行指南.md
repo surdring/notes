@@ -80,8 +80,7 @@ pwd
 export LLAMACPP_ROCM_ARCH=gfx906
 
 # 使用 ROCm 自带工具自动探测 hipclang 和 HIP 路径
-HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" cmake -S . -B build-hip -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx906 -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON
-&& cmake --build build-hip --config Release -j"$(nproc)"
+HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" cmake -S . -B build-hip -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx906 -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON && cmake --build build-hip --config Release -j"$(nproc)"
 ```
 
 #### 选项说明

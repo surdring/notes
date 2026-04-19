@@ -1,0 +1,21 @@
+这是 SSH 连接超时问题。解决方案：
+
+方案 1: 切换到 HTTPS 远程地址
+
+bash
+git remote set-url origin https://github.com/surdring/SecondBrainOS.git
+git pull
+
+方案 2: 检查网络连接
+
+bash
+# 测试 GitHub 连通性
+ping github.com
+# 或测试 SSH
+ssh -T git@github.com
+方案 3: 配置代理（如需要）
+
+bash
+# 使用 HTTPS 代理
+git config --global http.proxy http://proxy.example.com:8080
+git config --global https.proxy http://proxy.example.com:8080

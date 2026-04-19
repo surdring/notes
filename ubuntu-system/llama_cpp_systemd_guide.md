@@ -52,7 +52,7 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
-ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf -c 0 --n-gpu-layers -1 --jinja --host 0.0.0.0 --port 8080
+ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf -c 0 --n-gpu-layers 9999 --jinja --host 0.0.0.0 --port 8080
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -104,7 +104,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-safeguard-20b-Q4_K_M.gguf --ctx-size 65536 --n-gpu-layers -1 --jinja --api-key sk-local-gpt20b --host 0.0.0.0 --port 8080  --alias gpt-oss-20b
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-safeguard-20b-Q4_K_M.gguf --ctx-size 65536 --n-gpu-layers 9999 --jinja --api-key sk-local-gpt20b --host 0.0.0.0 --port 8080  --alias gpt-oss-20b
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -128,7 +128,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=1"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers 9999 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -153,7 +153,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=1"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-VL-32B-Instruct/Qwen3-VL-32B-Instruct-UD-Q4_K_XL.gguf --mmproj /mnt/ssd/models/Qwen3-VL-32B-Instruct/mmproj-F16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --jinja --api-key apikey --top-p 0.8 --top-k 20 --temp 0.7 --flash-attn on --host 0.0.0.0 --port 8082 --alias qwen3-vl
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-VL-32B-Instruct/Qwen3-VL-32B-Instruct-UD-Q4_K_XL.gguf --mmproj /mnt/ssd/models/Qwen3-VL-32B-Instruct/mmproj-F16.gguf --ctx-size 32768 --n-gpu-layers 9999 --threads 4 --jinja --api-key apikey --top-p 0.8 --top-k 20 --temp 0.7 --flash-attn on --host 0.0.0.0 --port 8082 --alias qwen3-vl
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -163,18 +163,18 @@ StandardError=journal
 WantedBy=default.target
 ```
 
-#### 服务3: Qwen3-Embedding-4B模型 (端口8083)
+#### 服务3: Qwopus3.5-9B-v3模型 (端口8080)
 ```ini
 [Unit]
-Description=Llama.cpp Qwen3-Embedding-4B Server on Port 8083
+Description=Llama.cpp Server on Port 8080
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
-Environment="HIP_VISIBLE_DEVICES=1"
+Environment="HIP_VISIBLE_DEVICES=0"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-Embedding-4B-Q4_K_M.gguf --reasoning-format deepseek --ctx-size 32684 -n 32768 --n-gpu-layers 999 --threads 8 --jinja --flash-attn auto -sm row --top-p 0.95 --temp 0.6 --top-k 20 --host 0.0.0.0 --no-context-shift --port 8083
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=0 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/Qwopus3.5-9B-v3/Qwen3.5-9B.Q8_0.gguf --ctx-size 65536 --n-gpu-layers 9999 --flash-attn on --top-p 0.95 --top-k 20 --temp 1.0 --min-p 0.00 --jinja --host 0.0.0.0 --port 8080  --alias Qwen3.5-9B
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -183,6 +183,7 @@ StandardError=journal
 [Install]
 WantedBy=default.target
 ```
+
 
 
 
@@ -197,7 +198,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=1"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-Reranker-4B-q4_k_m.gguf --reasoning-format deepseek --ctx-size 32684 -n 32768 --n-gpu-layers -1 --threads 8 --jinja --flash-attn auto -sm row --top-p 0.95 --temp 0.6 --top-k 20 --host 0.0.0.0 --no-context-shift --port 8084
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/Qwen3-Reranker-4B-q4_k_m.gguf --reasoning-format deepseek --ctx-size 32684 -n 32768 --n-gpu-layers 9999 --threads 8 --jinja --flash-attn auto -sm row --top-p 0.95 --temp 0.6 --top-k 20 --host 0.0.0.0 --no-context-shift --port 8084
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -206,6 +207,49 @@ StandardError=journal
 [Install]
 WantedBy=default.target
 
+```
+
+
+#### 服务5: Qwen3.5-35B-A3B-Claude-4.6-Opus模型 (端口8080)
+```ini
+[Unit]
+Description=Llama.cpp Server on Port 8083
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=0"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=0 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/Qwen3.5-35B-A3B-Claude-4.6-Opus/Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-MXFP4_MOE_BF16.gguf --mmproj /mnt/ssd/models/Qwen3.5-35B-A3B-Claude-4.6-Opus/mmproj-F32.gguf --ctx-size 32768 --n-gpu-layers 9999 --flash-attn on --top-p 0.95 --top-k 20 --temp 1.0 --min-p 0.00 --jinja --host 0.0.0.0 --port 8080 --chat-template-kwargs '{"enable_thinking":false}' --threads 8 --alias Qwen3.5
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+```
+
+#### 服务6: TeichAI-gemma-4-31B-it-Claude-Opus-Distill-v2模型 (端口8080)
+```ini
+[Unit]
+Description=Llama.cpp Server on Port 8083
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
+Environment="HIP_VISIBLE_DEVICES=0"
+Environment="GGML_LOG_LEVEL=debug"
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=0 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/TeichAI-gemma-4-31B/TeichAI-gemma-4-31B-it-Claude-Opus-Distill-v2.gguf --ctx-size 102400 --n-gpu-layers 9999 --flash-attn on --top-p 0.95 --top-k 64 --temp 1.0 --min-p 0.00 --jinja --host 0.0.0.0 --port 8080  --threads 8 --alias TeichAI-gemma-4-31B
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
 ```
 ### 2. 批量管理多个服务
 
@@ -219,7 +263,7 @@ systemctl --user daemon-reload
 systemctl --user enable llama-server-8080.service
 systemctl --user enable llama-server-8082.service
 
-systemctl --user enable --now llama-server-8083.service
+systemctl --user enable --now llama-server-8080.service
 systemctl --user enable --now llama-server-8084.service
 
 # 批量启动所有服务
@@ -274,7 +318,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=1"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers -1 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=1 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server --model /mnt/ssd/models/chandra-ocr/chandra-Q4_K_M.gguf --mmproj /mnt/ssd/models/chandra-ocr/chandra-mmproj-f16.gguf --ctx-size 32768 --n-gpu-layers 9999 --threads 4 --batch-size 512 --ubatch-size 128 --parallel 4 --jinja --api-key sk-local-ocr --flash-attn on --host 0.0.0.0 --port 8082 --alias chandra-ocr
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -569,7 +613,7 @@ User=zhengxueen
 Group=zhengxueen
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
-ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf -c 0 --n-gpu-layers -1 --jinja --host 0.0.0.0 --port 8080
+ExecStart=/home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/gpt-oss-20b-mxfp4.gguf -c 0 --n-gpu-layers 9999 --jinja --host 0.0.0.0 --port 8080
 Restart=always
 RestartSec=10
 StandardOutput=journal
