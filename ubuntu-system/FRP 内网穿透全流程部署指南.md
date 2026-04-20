@@ -70,6 +70,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable frps
 sudo systemctl restart frps
 ```
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable frpc
+sudo systemctl restart frpc
+```
 
 ---
 
@@ -150,7 +155,68 @@ hostHeaderRewrite = "she.tofly.top"
 # 或者使用后台服务（如果已配置 systemctl）：
 sudo systemctl restart frpc
 ```
-### 2.3 一套**“一台 frps + 两台 frpc（A/B）”**的标准模板
+
+### 2.3 解决 SSH 连接中断：配置心跳保活
+
+通过 FRP 暴露 SSH 端口（如 `remotePort = 6001`）时，常遇到连接自动中断问题。
+
+#### 问题现象
+```
+Connection closed by 47.96.159.100 port 6001
+```
+或
+```
+Connection closed by remote host
+```
+
+#### 原因
+- FRP TCP 代理默认 90 秒无活动即断开
+- SSH 服务器不主动发送心跳
+
+#### 解决方案（TOML 配置）
+
+**关键：心跳配置必须在 `[[proxies]]` 之前，属于全局 `transport` 配置！**
+
+```toml
+serverAddr = "47.96.159.100"
+serverPort = 7700
+
+# 全局心跳配置（✅ 正确位置：在 [[proxies]] 之前）
+transport.heartbeatInterval = 30
+transport.heartbeatTimeout = 90
+
+# 代理配置（[[proxies]] 之后不能放全局配置）
+[[proxies]]
+name = "client-a-ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 2222      # 本地 SSH 端口
+remotePort = 6001     # 对外暴露端口
+```
+
+> ⚠️ **常见错误**：将 `transport.heartbeatInterval` 放在 `[[proxies]]` 之后，会导致启动失败：
+> ```
+> decode proxy: unmarshal ProxyConfig error: json: unknown field "heartbeatInterval"
+> ```
+
+#### 配套 SSH 心跳（双保险）
+
+连接时在 SSH 客户端也启用心跳：
+```bash
+ssh -p 6001 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 user@host
+```
+
+或写入 `~/.ssh/config`：
+```bash
+Host frp-ssh
+    HostName 47.96.159.100
+    Port 6001
+    User zheng
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
+```
+
+### 2.4 一套**"一台 frps + 两台 frpc（A/B）"**的标准模板
 
 ```shell
 # # 客户机 A：`frpc.toml`（HTTP 子域名 + 可选 TCP）
@@ -160,6 +226,10 @@ serverPort = 7700
 [auth]
 method = "token"
 token = "PLEASE_CHANGE_ME_TO_A_LONG_RANDOM_TOKEN"
+
+# （可选）心跳保活配置 - 防止 SSH 等 TCP 连接中断
+transport.heartbeatInterval = 30
+transport.heartbeatTimeout = 90
 
 # A 的 LifeStream 前端（Vite 3000）
 [[proxies]]
@@ -187,6 +257,10 @@ serverPort = 7700
 [auth]
 method = "token"
 token = "PLEASE_CHANGE_ME_TO_A_LONG_RANDOM_TOKEN"
+
+# （可选）心跳保活配置 - 防止 SSH 等 TCP 连接中断
+transport.heartbeatInterval = 30
+transport.heartbeatTimeout = 90
 
 [[proxies]]
 name = "client-b-lifestream-web"
