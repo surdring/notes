@@ -281,6 +281,9 @@ sudo systemctl restart fail2ban
 命令行参数：
 ```bash
 ssh -p 6001 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 user@host
+
+ssh -p 6001 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 zheng@47.96.159.100
+
 ```
 
 或写入 `~/.ssh/config`：
