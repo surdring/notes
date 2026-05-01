@@ -34,26 +34,6 @@
               "icon": "lucide-file",
               "title": "ROCm-llama.cpp-MI50-构建与运行指南"
             }
-          }
-        ]
-      },
-      {
-        "id": "88172d2cfa9a8401",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "3e3396fe15aa2ecd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "ubuntu-system/FRP 内网穿透全流程部署指南.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "FRP 内网穿透全流程部署指南"
-            }
           },
           {
             "id": "6ca697e74685e5b2",
@@ -61,68 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "openclaw/OpenClaw-配置参考.md",
+                "file": "llama-cpp/模型部署指令集.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "OpenClaw-配置参考"
-            }
-          },
-          {
-            "id": "6b58dfde74c39c4a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "rocm/ROCm7-卸载与安装指南.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "ROCm7-卸载与安装指南"
-            }
-          },
-          {
-            "id": "e57726d855445ccd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "rocm/Linux下MI50推理稳压与锁频指南.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Linux下MI50推理稳压与锁频指南"
-            }
-          },
-          {
-            "id": "5bb477293d6a91ed",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "ROCm_7.0.3_Ubuntu_24.04_安装指南"
-            }
-          },
-          {
-            "id": "03c4062a877b594a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "PLC/全阶段详细日程（112天）.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "全阶段详细日程（112天）"
+              "title": "模型部署指令集"
             }
           }
         ],
@@ -288,8 +212,13 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "6ca697e74685e5b2",
+  "active": "b16cada7c89134d4",
   "lastOpenFiles": [
+    "llama-cpp/模型部署指令集.md",
+    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "rust/rust-mirror-setup.md",
+    "rust",
+    "openclaw/OpenClaw-配置参考.md",
     "ubuntu-system/smb_access_log.py",
     "ubuntu-system/SMB共享文件夹指南.md",
     "openclaw/OpenClaw-重装-切换系统Node-全新初始化.md",
@@ -297,13 +226,11 @@
     "openclaw/Brave Search API Key.md",
     "openclaw/OpenClaw-双Agent-双Feishu-配置与路由绑定指南.md",
     "openclaw/方舟APIkey.md",
-    "llama-cpp/模型部署指令集.md",
     "llama-cpp/Unsloth 页面推荐的工具调用参数.md",
     "ubuntu-system/OpenSSH-Server-安装与使用指南.md",
     "ubuntu-system/FRP 内网穿透全流程部署指南.md",
     "ubuntu-system/frpc-systemd.md",
     "rocm/Linux下MI50推理稳压与锁频指南.md",
-    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
     "ubuntu-system/llama_cpp_systemd_guide.md",
     "openclaw/OpenClaw-安装与排错指南.md",
     "PLC/全阶段详细日程（112天）.md",
@@ -319,7 +246,6 @@
     "git-notes/SSH 连接超时问题解决方案",
     "openclaw/QQ机器人",
     "git-notes/GitHubCLI安装与使用.md",
-    "weknora-docs/WeKnora相关配置信息.md",
     "weknora-docs/swagger.yaml",
     "weknora-docs/swagger.json",
     "weknora-docs/images/settings.png",
@@ -333,8 +259,6 @@
     "weknora-docs/images/graph3.png",
     "weknora-docs/images/graph2.png",
     "weknora-docs/images",
-    "weknora-docs/docs.go",
-    "weknora-docs/api",
-    "weknora-docs/WeKnora.pdf"
+    "weknora-docs/docs.go"
   ]
 }

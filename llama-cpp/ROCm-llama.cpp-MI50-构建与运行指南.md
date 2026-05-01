@@ -478,4 +478,183 @@ sudo systemctl enable --now llama-server.service
 sudo systemctl status llama-server.service
 ```
 
-> 以上 8.x 小节的内容来自你早期在 Ubuntu 22.04 + ROCm 5.x 环境下的 MI50 部署实践，已经过抽象和更新，适用于当前基于官方 llama.cpp + ROCm 7.x 的环境，仅作“进阶排障与运维”参考。
+> 以上 8.x 小节的内容来自你早期在 Ubuntu 22.04 + ROCm 5.x 环境下的 MI50 部署实践，已经过抽象和更新，适用于当前基于官方 llama.cpp + ROCm 7.x 的环境，仅作"进阶排障与运维"参考。
+
+---
+
+## 9. 在 MI50 上构建 buun-llama-cpp（TCQ KV Cache 压缩）
+
+[buun-llama-cpp](https://github.com/spiritbuun/buun-llama-cpp) 是 llama.cpp 的实验性 fork，核心特性是 **Trellis-Coded Quantization (TCQ)** 用于 KV cache 压缩，可在相同 VRAM 下获得 2-7 倍的上下文长度，质量接近甚至优于 FP16。
+
+> **注意**：buun-llama-cpp 的 TCQ 功能目前主要针对 CUDA 后端优化，HIP/ROCm 后端的 TCQ 支持可能有限。构建前请确认目标功能在 ROCm 上的可用性。
+
+### 9.1 获取 buun-llama-cpp 源码
+
+```bash
+mkdir -p ~/workspace && cd ~/workspace
+
+git clone https://github.com/spiritbuun/buun-llama-cpp
+cd buun-llama-cpp
+```
+
+### 9.2 配置与构建
+
+在 MI50 上构建时，推荐结合 `hipconfig` 自动探测路径（可移植性更好）与 buun-llama-cpp README 中的选项：
+
+```bash
+# 为 MI50 设置架构
+export LLAMACPP_ROCM_ARCH=gfx906
+
+# 配置（使用 hipconfig 自动探测编译器路径）
+HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
+cmake -B build-hip \
+  -DGGML_HIP=ON \
+  -DAMDGPU_TARGETS=gfx906 \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLAMA_BUILD_SERVER=ON \
+  -DLLAMA_CURL=ON
+
+# 编译
+cmake --build build-hip -j$(nproc)
+```
+
+#### 与上游 llama.cpp 构建命令的差异
+
+| 选项 | 上游 llama.cpp | buun-llama-cpp |
+|------|---------------|----------------|
+| 编译器指定 | `HIPCXX` + `HIP_PATH` 环境变量 | README 中硬编码 `amdclang` 路径；MI50 上推荐仍用 `hipconfig` 自动探测 |
+| `-DLLAMA_BUILD_SERVER` | 未设置 | `ON`（显式编译 llama-server） |
+| `-DLLAMA_CURL` | `ON` | 可选加入，启用 HTTP 支持 |
+| 构建目录 | `build-hip` | `build-hip` |
+
+> **编译器选择说明**：buun-llama-cpp README 使用 `-DCMAKE_C_COMPILER=/opt/rocm/bin/amdclang` 硬编码路径，简单直接但换环境需手动修改。对于 MI50 环境，推荐沿用 `hipconfig` 自动探测方式，可移植性更好。
+
+### 9.3 使用 TCQ KV Cache 运行推理
+
+构建完成后，在原有部署命令基础上添加 `-ctk` / `-ctv` 参数即可启用 TCQ KV cache 压缩。以下以 Qwen3.6-35B-A3B 为例：
+
+#### turbo4（4.25 bpv）—— 推荐默认，几乎无损
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+```
+
+```bash
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo4 -ctv turbo4 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B \
+  --log-disable
+```
+
+#### 3-bit TCQ（3.25 bpv）—— 短上下文质量优于 FP16，~5x KV cache 压缩
+
+```bash
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo3_tcq -ctv turbo3_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B \
+  --log-disable
+```
+
+#### 2-bit TCQ（2.25 bpv）—— 最大压缩，~7x KV cache 压缩，适合极限长上下文
+
+```bash
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo2_tcq -ctv turbo2_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B \
+  --log-disable
+```
+
+#### 非对称 2.75 bpv —— 3-bit K + 2-bit V，最佳 2-bit 质量
+
+```bash
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo3_tcq -ctv turbo2_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B \
+  --log-disable
+```
+
+### 9.4 TCQ 参数说明
+
+- **`-ctk`**：KV cache 中 Key 的量化类型
+- **`-ctv`**：KV cache 中 Value 的量化类型
+- **`-fa`**：启用 Flash Attention（TCQ 推荐开启）
+- **`-ngl 99`**：将所有层 offload 到 GPU（等同于 `--n-gpu-layers -1`）
+
+### 9.5 MI50 上的注意事项
+
+- MI50（gfx906）为 Vega20 架构，32GB HBM2 显存，TCQ 压缩在显存受限场景下收益最大
+- MI50 不支持 BF16 数据类型，如遇 BF16 相关编译错误，可能需要额外补丁
+- TCQ 的 CUDA kernel 可能尚未完全适配 HIP 后端，如遇编译失败，可先尝试不带 TCQ 的标量量化模式（`turbo3` / `turbo2`）
+- 如遇 GFX 版本识别问题，添加 `HSA_OVERRIDE_GFX_VERSION=9.0.6`
