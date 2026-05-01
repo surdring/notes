@@ -564,6 +564,29 @@ HIP_VISIBLE_DEVICES=0 \
   --log-disable
 ```
 
+```bash
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-27B/Abiray-Huihui-Qwen3.6-27B-abliterated-Q8_0.gguf \
+  --ctx-size 65536 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo4 -ctv turbo4 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-27B \
+  --log-disable
+```
 #### 3-bit TCQ（3.25 bpv）—— 短上下文质量优于 FP16，~5x KV cache 压缩
 
 ```bash

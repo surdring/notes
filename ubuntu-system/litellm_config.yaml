@@ -1,0 +1,10 @@
+model_list:
+  - model_name: qwen
+    litellm_params:
+      model: openai/Qwen3.6-35B-A3B
+      api_base: http://127.0.0.1:8080
+      api_key: sk-anything
+ 
+litellm_settings:
+  drop_params: true
+  use_chat_completions_url_for_anthropic_messages: true
