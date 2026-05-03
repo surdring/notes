@@ -681,3 +681,425 @@ HIP_VISIBLE_DEVICES=0 \
 - MI50 不支持 BF16 数据类型，如遇 BF16 相关编译错误，可能需要额外补丁
 - TCQ 的 CUDA kernel 可能尚未完全适配 HIP 后端，如遇编译失败，可先尝试不带 TCQ 的标量量化模式（`turbo3` / `turbo2`）
 - 如遇 GFX 版本识别问题，添加 `HSA_OVERRIDE_GFX_VERSION=9.0.6`
+
+---
+
+## 10. 双 MI50/Pro VII 构建 buun-llama-cpp
+
+> 本节基于双卡环境：GPU[0] = MI50 16GB (card0, PCI 08:00.0)，GPU[1] = Radeon Pro VII 32GB (card1, PCI 05:00.0)，均为 `gfx906`。详见 [双卡GPU信息与配置记录](../rocm/双卡GPU信息与配置记录.md)。
+
+### 10.1 双卡环境特点
+
+| 属性 | GPU[0] | GPU[1] |
+|---|---|---|
+| 型号 | MI50 16GB | Radeon Pro VII 32GB |
+| VRAM | ~16 GiB | ~32 GiB |
+| GFX | gfx906 | gfx906 |
+| `HIP_VISIBLE_DEVICES` | 0 | 1 |
+| sysfs | card0 | card1 |
+
+**总可用 VRAM**：~48 GiB（16 + 32）
+
+> **关键约束**：两张卡 VRAM 不对称（16:32 = 1:2），多 GPU 推理时必须通过 `-ts` 指定 tensor split 比例，否则默认均分会浪费 32GB 卡的显存。
+
+### 10.2 获取与构建 buun-llama-cpp（双卡版）
+
+buun-llama-cpp 的 ROCm/HIP 构建官方仅在 RDNA3 (gfx1100) 上测试过，gfx906 构建可能需要额外调整。
+
+```bash
+mkdir -p ~/workspace && cd ~/workspace
+
+# 克隆 buun-llama-cpp
+git clone https://github.com/spiritbuun/buun-llama-cpp
+cd buun-llama-cpp
+git submodule update --init --recursive
+
+# 为双卡 gfx906 设置架构
+export LLAMACPP_ROCM_ARCH=gfx906
+
+# 配置（使用 hipconfig 自动探测，而非 README 中硬编码的 amdclang 路径）
+HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
+cmake -B build-hip \
+  -DGGML_HIP=ON \
+  -DAMDGPU_TARGETS=gfx906 \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLAMA_BUILD_SERVER=ON \
+  -DLLAMA_CURL=ON
+
+# 编译
+cmake --build build-hip -j$(nproc)
+```
+
+> **注意**：buun-llama-cpp 的 TCQ kernel 主要针对 CUDA 优化。HIP 后端编译可能遇到 TCQ 专用 kernel 不兼容的问题。如遇编译失败，可先尝试标量量化模式（`turbo3` / `turbo2`，不含 `_tcq` 后缀），这些不依赖 TCQ 专用 kernel。
+
+### 10.3 双卡 llama-server 关键参数
+
+llama-server 提供以下多 GPU 参数（参考 [官方 server 文档](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)）：
+
+| 参数 | 说明 | 双卡推荐值 |
+|---|---|---|
+| `-sm, --split-mode {none,layer,row}` | 多 GPU 分割模式 | `row`（tensor 并行，适合推理）或 `layer`（层分割） |
+| `-ts, --tensor-split N0,N1,...` | 各 GPU 的 tensor 分配比例 | `1,2`（对应 16GB:32GB = 1:2） |
+| `-mg, --main-gpu INDEX` | 主 GPU 索引 | `1`（32GB 卡为主，承担更多计算） |
+| `-ngl, --gpu-layers N` | GPU offload 层数 | `999`（全部 offload） |
+| `-dev, --device <dev1,dev2,..>` | 指定设备 | `hip:0,hip:1` |
+| `-fa, --flash-attn` | Flash Attention | `on`（TCQ 推荐开启） |
+| `-ctk, --cache-type-k` | KV cache Key 量化类型 | `turbo4`（默认推荐） |
+| `-ctv, --cache-type-v` | KV cache Value 量化类型 | `turbo4`（默认推荐） |
+| `-cram, --cache-ram N` | 固定大小 RAM 缓存 | `0`（全放 VRAM） |
+| `-np, --parallel N` | 并行序列数 | `1`（双卡推理建议从 1 开始） |
+
+> **split-mode 说明**：
+> - `layer`：按层分割，不同 GPU 负责不同层。简单但层间通信开销较大。
+> - `row`：按行分割（tensor parallelism），同一层的矩阵按行切到不同 GPU。通信更高效，推荐用于双卡推理。
+> - `none`：不分割，仅使用单卡。
+
+### 10.4 双卡运行示例
+
+#### turbo4（4.25 bpv）—— 推荐默认，几乎无损
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo4 -ctv turbo4 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+```
+
+#### 3-bit TCQ（3.25 bpv）—— 短上下文质量优于 FP16，~5x KV cache 压缩
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo3_tcq -ctv turbo3_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+```
+
+#### 2-bit TCQ（2.25 bpv）—— 最大压缩，适合极限长上下文
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo2_tcq -ctv turbo2_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+```
+
+#### 非对称 2.75 bpv —— 3-bit K + 2-bit V，最佳 2-bit 质量
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo3_tcq -ctv turbo2_tcq \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+```
+
+#### 标量量化（无 TCQ）—— 如 TCQ kernel 在 HIP 上编译失败的后备方案
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opliterated-q5_k_m.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo3 -ctv turbo3 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+```
+
+### 10.5 VRAM 预算与 TCQ 上下文长度估算
+
+双卡总 VRAM ~48 GiB，扣除系统开销后可用约 45 GiB。
+
+| 模型大小 (Q4/Q5) | 模型占用 | 剩余 VRAM | turbo4 可用 ctx | turbo3_tcq 可用 ctx | turbo2_tcq 可用 ctx |
+|---|---|---|---|---|---|
+| ~10 GiB (14B Q4) | ~10 GiB | ~35 GiB | ~90K | ~120K | ~170K |
+| ~20 GiB (35B Q5) | ~20 GiB | ~25 GiB | ~65K | ~85K | ~120K |
+| ~30 GiB (70B Q4) | ~30 GiB | ~15 GiB | ~40K | ~50K | ~70K |
+
+> 估算基于：turbo4 ≈ 3.8x 压缩，turbo3_tcq ≈ 5x 压缩，turbo2_tcq ≈ 7x 压缩（相对 FP16 KV cache）。实际可用上下文长度取决于模型 head_dim、层数等参数，以上仅为粗略参考。
+
+### 10.6 双卡注意事项
+
+1. **VRAM 不对称**：必须用 `-ts 1,2` 按 1:2 比例分配 tensor，否则默认均分会导致 16GB 卡 OOM
+2. **主 GPU 选择**：建议 `-mg 1`（32GB 卡为主），主 GPU 承担更多计算和 KV cache 管理
+3. **split-mode 选择**：`row` 比 `layer` 通信效率更高，推荐双卡推理使用
+4. **TCQ + HIP 兼容性**：buun-llama-cpp 的 TCQ kernel 官方仅在 CUDA (RTX 3090) 和 ROCm RDNA3 (gfx1100) 上测试。gfx906 上可能需要降级到标量量化（`turbo3` / `turbo2`）
+5. **锁频与限功耗**：双卡推理时两张卡均有负载，务必确认 [双卡锁频服务](../rocm/双卡GPU信息与配置记录.md#6-systemd-服务双卡版) 已启用，防止温度尖峰导致掉卡
+6. **GFX 版本**：如遇 GFX 版本识别问题，添加 `HSA_OVERRIDE_GFX_VERSION=9.0.6`
+7. **MI50 不支持 BF16**：如模型 mmproj 使用 BF16 格式，可能需要额外补丁或使用 F16 版本
+
+### 10.7 双卡 Systemd 服务示例
+
+```ini
+# ~/.config/systemd/user/llama-server-dual.service
+[Unit]
+Description=Llama.cpp Server (Dual GPU: MI50 16GB + Pro VII 32GB)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/zhengxueen/workspace/buun-llama-cpp
+Environment="HIP_VISIBLE_DEVICES=0,1"
+ExecStart=/home/zhengxueen/workspace/buun-llama-cpp/build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo4 -ctv turbo4 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual \
+  --log-disable
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+```
+
+启用与管理：
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now llama-server-dual.service
+systemctl --user status llama-server-dual.service
+```
+
+### 10.8 验证双卡是否生效
+
+```bash
+# 启动后观察两张卡的 VRAM 使用
+rocm-smi --showmeminfo vram
+
+# 两张卡都应有显著的 VRAM 占用（而非只有一张）
+# GPU[0] 应占约 1/3，GPU[1] 应占约 2/3（对应 -ts 1,2）
+
+# 实时监控温度与功耗
+watch -n 2 rocm-smi
+
+# 检查服务日志
+journalctl --user -u llama-server-dual.service -f
+```
+
+---
+
+## 11. ngram-mod 投机解码加速
+
+> llama.cpp 原生支持多种投机解码方案，其中 **ngram-mod** 是最适合 MoE 模型（如 Qwen3.6-35B-A3B）的无额外模型加速方案。
+> 它通过轻量哈希池（~16 MB）记录 n-gram → next token 映射，跨 slot 共享，在推理/总结/代码重写等场景下可显著提升 token 吞吐。
+
+### 11.1 原理简述
+
+- 对每个 n-gram 计算一个 LCG 哈希
+- 对每个哈希值存储其下一个 token
+- 推理时，滚动计算最近 n 个 token 的哈希，从哈希池中取出候选 token 作为草稿
+- 主模型批量验证草稿 token，接受正确的、拒绝错误的
+
+**特点**：
+- 常量内存（~16 MB），不随上下文增长
+- 不需要额外的小模型（Draft Model）
+- 跨 slot 共享哈希池，不同请求可互相受益
+- 可生成变长草稿（m 不固定）
+
+### 11.2 单卡启动示例
+
+```bash
+HIP_VISIBLE_DEVICES=1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -ctk turbo3_tcq -ctv turbo3_tcq \
+  --spec-type ngram-mod \
+  --spec-ngram-size-n 24 \
+  --draft-min 48 \
+  --draft-max 64 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-ngram-mod \
+  --log-disable
+```
+
+### 11.3 双卡启动示例
+
+```bash
+cd /home/zhengxueen/workspace/buun-llama-cpp
+
+env -u HSA_VISIBLE_DEVICES -u ROCR_VISIBLE_DEVICES -u CUDA_VISIBLE_DEVICES \
+HIP_VISIBLE_DEVICES=0,1 \
+./build-hip/bin/llama-server \
+  --model /mnt/ssd/models/Qwen3.6-35B-A3B/huihui-qwen3.6-35b-a3b-claude-4.7-opus-abliterated-q5_k_m.gguf \
+  --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf \
+  --ctx-size 131072 \
+  -ngl 999 -cram 0 -np 1 \
+  -sm row -ts 1,2 -mg 1 \
+  -ctk turbo3_tcq -ctv turbo3_tcq \
+  --spec-type ngram-mod \
+  --spec-ngram-size-n 24 \
+  --draft-min 48 \
+  --draft-max 64 \
+  --jinja \
+  --flash-attn on \
+  --threads 8 \
+  --temperature 0.7 \
+  --top-p 0.8 \
+  --top-k 20 \
+  --host 0.0.0.0 \
+  --min-p 0.00 \
+  --port 8080 \
+  --no-mmap \
+  --presence-penalty 1.5 \
+  --repeat-penalty 1.0 \
+  --alias Qwen3.6-35B-A3B-dual-ngram-mod \
+  --log-disable
+```
+
+### 11.4 参数调优建议
+
+| 参数 | 推荐值 | 说明 |
+|---|---|---|
+| `--spec-type` | `ngram-mod` | 投机解码类型，MoE 模型首选 |
+| `--spec-ngram-size-n` | `24` | n-gram 长度，过小容易误匹配，推荐 16–32 |
+| `--draft-min` | `48` | 最少草稿 token 数，MoE 需要较长草稿才能有效加速 |
+| `--draft-max` | `64` | 最大草稿 token 数，越大潜在加速越高但验证成本也越高 |
+
+**调优思路**：
+- **n 值**：代码/结构化文本用较大值（24–32），自然语言对话可用较小值（12–16）
+- **draft 范围**：MoE 模型单 token 计算快但 batch 不友好，建议 `--draft-min 48 --draft-max 64`；密集模型可降低到 `--draft-min 16 --draft-max 32`
+- **观察接受率**：启动后通过日志观察草稿接受率，接受率 > 70% 说明参数合理，< 30% 则需减小 draft 范围或增大 n
+
+### 11.5 其他投机解码方案对比
+
+llama.cpp 还支持以下方案（通过 `--spec-type` 选择）：
+
+| 方案 | 需要额外模型 | 内存开销 | 适合场景 |
+|---|---|---|---|
+| `draft` | ✅ 需要小模型 | 大（加载两个模型） | 通用，有合适小模型时 |
+| `ngram-cache` | ❌ | 中 | 有外部统计文件 |
+| `ngram-simple` | ❌ | 小 | 简单场景，最小开销 |
+| `ngram-map-k` | ❌ | 小 | 有重复模式的文本 |
+| `ngram-map-k4v` | ❌ | 小 | 长重复文本（实验性） |
+| **`ngram-mod`** | ❌ | **~16 MB** | **MoE / 推理 / 总结 / 代码** |
+
+> **注意**：Qwen3.5/3.6 的 MTP（Multi-Token Prediction）是模型架构内置的预测头，目前仅 vLLM 和 SGLang 支持，llama.cpp 尚未实现。在 llama.cpp 上，ngram-mod 是最接近 MTP 加速效果的替代方案。

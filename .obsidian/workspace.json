@@ -20,13 +20,7 @@
               "icon": "lucide-file",
               "title": "ROCm-llama.cpp-MI50-构建与运行指南"
             }
-          }
-        ]
-      },
-      {
-        "id": "276d789faa9a53c4",
-        "type": "tabs",
-        "children": [
+          },
           {
             "id": "583fd7e25b2066bd",
             "type": "leaf",
@@ -41,7 +35,8 @@
               "title": "模型部署指令集"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -203,10 +198,14 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "b16cada7c89134d4",
+  "active": "583fd7e25b2066bd",
   "lastOpenFiles": [
-    "llama-cpp/模型部署指令集.md",
+    "vllm/huggingface_model_download_guide.md",
+    "ubuntu-system/setup_smb_server_guide.md",
+    "rocm/双卡GPU信息与配置记录.md",
     "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "llama-cpp/模型部署指令集.md",
+    "rocm/Linux下MI50推理稳压与锁频指南.md",
     "rust/rust-mirror-setup.md",
     "rust",
     "openclaw/OpenClaw-配置参考.md",
@@ -221,7 +220,6 @@
     "ubuntu-system/OpenSSH-Server-安装与使用指南.md",
     "ubuntu-system/FRP 内网穿透全流程部署指南.md",
     "ubuntu-system/frpc-systemd.md",
-    "rocm/Linux下MI50推理稳压与锁频指南.md",
     "ubuntu-system/llama_cpp_systemd_guide.md",
     "openclaw/OpenClaw-安装与排错指南.md",
     "PLC/全阶段详细日程（112天）.md",
@@ -231,12 +229,9 @@
     "rocm/ROCm7-卸载与安装指南.md",
     "rocm/新版llama.cpp-gfx906三角求解solve修复.md",
     "docker/国内环境安装docker.md",
-    "ubuntu-system/ubuntu_ntfs_desktop_shortcuts_guide.md",
-    "ubuntu-system/ubuntu_mount_ntfs_guide.md",
     "git-notes/git pull SSH 连接超时问题解决方案",
     "git-notes/SSH 连接超时问题解决方案",
     "openclaw/QQ机器人",
-    "git-notes/GitHubCLI安装与使用.md",
     "weknora-docs/swagger.yaml",
     "weknora-docs/swagger.json",
     "weknora-docs/images/settings.png",
