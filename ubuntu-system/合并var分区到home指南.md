@@ -10,7 +10,7 @@
 /dev/sdb2  1G     /boot/efi
 /dev/sdb3  186G   /          (已用 46G，可用 128G)
 /dev/sdb4  140G   /home      (已用 56G，可用 75G)
-/dev/sdb5  134G   /var       (实际数据 14G，df 显示 58G)
+/dev/sdb5  134G   /var       (实际数据约 80G，df 显示 127G)
 ```
 
 ---
@@ -53,7 +53,19 @@ sudo cp /etc/fstab /etc/fstab.bak
 
 # 备份 /home 中重要数据到外部存储
 # （清理后再备份，体积更小、速度更快）
-rsync -av --progress /home/zhengxueen/ /mnt/sata/home-backup-$(date +%Y%m%d)/
+# --no-acls --no-xattrs: 跳过目标文件系统可能不支持的扩展属性
+# --exclude: 跳过系统虚拟文件系统和可自动重建的缓存
+rsync -av --progress --no-acls --no-xattrs \
+  --exclude='.gvfs' \
+  --exclude='.cache/dconf' \
+  --exclude='.cache/doc' \
+  --exclude='.cache/gvfsd' \
+  /home/zhengxueen/ /mnt/sata/home-backup-$(date +%Y%m%d)/
+
+# 如果有 Docker volume 等需要 root 权限的数据，用 sudo 补充备份
+# （Docker 数据可从 docker-compose 重建，非必须）
+# sudo rsync -av --progress /home/zhengxueen/workspace/dify/dify-main/docker/volumes/ \
+#   /mnt/sata/home-backup-$(date +%Y%m%d)/workspace/dify/dify-main/docker/volumes/
 ```
 
 ---
@@ -70,9 +82,9 @@ df -h /
 sudo mkdir -p /tmp/rootpart
 sudo mount /dev/sdb3 /tmp/rootpart
 
-# 3. 确认根分区的 /var 目录存在
+# 3. 确认根分区的 /var 目录存在（可能为空，因为 sdb5 覆盖挂载了 /var）
 ls /tmp/rootpart/var/
-# 应该看到 cache lib log snap 等目录
+# 空目录是正常的，第 4 步会把数据复制进去
 
 # 4. 复制 /var 数据（-a 保留权限、属主、时间戳）
 sudo cp -a /var/* /tmp/rootpart/var/
@@ -140,7 +152,7 @@ ls /var/cache/
 
 # 确认根分区空间够用
 df -h /
-# 应该显示已用约 60G（原 46G + /var 的 14G），可用约 114G
+# 应该显示已用约 127G（原 46G + /var 的 80G），可用约 47G
 ```
 
 **如果重启失败**（进不了系统）：
@@ -223,7 +235,7 @@ sudo reboot
 
 # 重启后检查
 df -h / /home /var
-# /     → /dev/sdb3  约 186G（已用 ~60G）
+# /     → /dev/sdb3  约 183G（已用 ~127G，可用 ~47G）
 # /home → /dev/sdb4  约 274G（已用 ~56G）
 # /var  → 应显示和 / 相同的 /dev/sdb3
 

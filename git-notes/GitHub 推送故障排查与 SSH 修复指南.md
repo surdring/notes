@@ -81,6 +81,8 @@ git remote -v
 
 ```bash
 git remote set-url origin git@github.com:surdring/GangQing.git
+
+git remote set-url origin git@github.com:surdring/ConfigFlowRegister.git
 ```
 
 > 将 `surdring/GangQing` 替换为你的实际仓库路径。

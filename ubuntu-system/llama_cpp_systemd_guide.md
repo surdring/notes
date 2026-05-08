@@ -210,10 +210,12 @@ WantedBy=default.target
 ```
 
 
-#### 服务5: Qwen3.5-35B-A3B-Claude-4.6-Opus模型 (端口8080)
+#### 服务5: noctrex_Qwen3.6-35B-A3B-uncensored-heretic-MXFP4_MOE模型 (端口8080)
 ```ini
+# nano ~/.config/systemd/user/llama-server-8080.service
+
 [Unit]
-Description=Llama.cpp Server on Port 8083
+Description=Llama.cpp Server on Port 8080
 After=network.target
 
 [Service]
@@ -221,7 +223,7 @@ Type=simple
 WorkingDirectory=/home/zhengxueen/workspace/llama.cpp
 Environment="HIP_VISIBLE_DEVICES=0"
 Environment="GGML_LOG_LEVEL=debug"
-ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=0 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/Qwen3.5-35B-A3B-Claude-4.6-Opus/Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-MXFP4_MOE_BF16.gguf --mmproj /mnt/ssd/models/Qwen3.5-35B-A3B-Claude-4.6-Opus/mmproj-F32.gguf --ctx-size 32768 --n-gpu-layers 9999 --flash-attn on --top-p 0.95 --top-k 20 --temp 1.0 --min-p 0.00 --jinja --host 0.0.0.0 --port 8080 --chat-template-kwargs '{"enable_thinking":false}' --threads 8 --alias Qwen3.5
+ExecStart=/usr/bin/env -i HOME=%h USER=%u LOGNAME=%u PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HIP_VISIBLE_DEVICES=0 GGML_LOG_LEVEL=debug /home/zhengxueen/workspace/llama.cpp/build-hip/bin/llama-server -m /mnt/ssd/models/Qwen3.6-35B-A3B/noctrex_Qwen3.6-35B-A3B-uncensored-heretic-MXFP4_MOE.gguf --mmproj /mnt/ssd/models/Qwen3.6-35B-A3B/mmproj-BF16.gguf --ctx-size 262144 -ngl 999 -cram 0 -np 1 --flash-attn on --threads 4 --top-p 0.95 --top-k 20 --temp 0.7 --min-p 0.00 --jinja --host 0.0.0.0 --port 8080 --presence-penalty 1.5 --repeat-penalty 1.0 --reasoning on --alias Qwen3.6-35B-A3B
 Restart=always
 RestartSec=10
 StandardOutput=journal
