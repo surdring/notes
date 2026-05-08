@@ -77,11 +77,13 @@ pwd
 # 例如：/home/zhengxueen/workspace/llama.cpp
 
 # 使用 ROCm 自带工具自动探测 hipclang 和 HIP 路径
+export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
+
 rm -rf ~/workspace/llama.cpp/build-hip &&
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
   cmake -S . -B build-hip \
   -DGGML_HIP=ON \
-  -DGPU_TARGETS=gfx906 \
+  -DGPU_TARGETS="$LLAMACPP_ROCM_ARCH" \
   -DCMAKE_BUILD_TYPE=Release \
   -DGGML_CURL=ON \
   && cmake --build build-hip --config Release -j"$(nproc)"

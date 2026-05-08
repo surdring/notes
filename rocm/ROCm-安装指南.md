@@ -97,13 +97,7 @@ sudo apt update
 
 ## 5. 注册目标版本仓库
 
-### 安装 ROCm 7.0.2
 
-```bash
-wget https://repo.radeon.com/amdgpu-install/7.0.2/ubuntu/noble/amdgpu-install_7.0.2.70002-1_all.deb
-sudo apt install ./amdgpu-install_7.0.2.70002-1_all.deb
-sudo apt update
-```
 
 > 如果之前已经安装过相同版本的 `amdgpu-install`，再次安装是幂等的，可以直接覆盖。
 
@@ -261,6 +255,7 @@ cd ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library
 
 # 列出所有带 gfx906 的内核文件
 ls *gfx906* 2>/dev/null || find . -name '*gfx906*'
+ls *gfx1010* 2>/dev/null || find . -name '*gfx1010*'
 ```
 
 常见文件示例（不完整，仅示意）：
@@ -278,6 +273,7 @@ sudo mkdir -p /opt/rocm/lib/rocblas/library
 
 # 在上一步的 ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library 目录中执行：
 sudo cp *gfx906* /opt/rocm/lib/rocblas/library/
+sudo cp *gfx1010* /opt/rocm/lib/rocblas/library/
 ```
 
 ### 11.5 注意事项
