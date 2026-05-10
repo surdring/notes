@@ -50,6 +50,26 @@ Hi <username>! You've successfully authenticated, but GitHub does not provide sh
 
 配置完成后 `git push` 即可正常使用，无需其他修改。
 
+## 备选方案：切换到 HTTPS 协议
+
+如果 SSH 端口 22 和 443 都被封锁，可切换到 HTTPS 协议：
+
+```bash
+# 查看当前 remote URL
+git remote -v
+
+# 切换为 HTTPS
+git remote set-url origin https://github.com/<username>/<repo>.git
+
+# 推送
+git push origin HEAD
+```
+
+如需恢复 SSH 协议：
+```bash
+git remote set-url origin git@github.com:<username>/<repo>.git
+```
+
 ## 注意事项
 
 - 首次通过 443 端口连接时，需确认主机指纹（输入 `yes`），系统会自动将 `ssh.github.com:443` 添加到 `~/.ssh/known_hosts`
