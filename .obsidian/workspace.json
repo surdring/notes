@@ -121,7 +121,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 319.5
   },
   "right": {
     "id": "879f09582170b7c7",
@@ -228,8 +228,11 @@
   },
   "active": "5cd699e70cfd8ce1",
   "lastOpenFiles": [
-    "llama-cpp/模型部署指令集.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
     "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+    "ubuntu-system/frpc-systemd.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "llama-cpp/模型部署指令集.md",
     "rocm/升级到 ROCm 7.2.2 的步骤.md",
     "rocm/新版llama.cpp-gfx906三角求解solve修复.md",
     "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
@@ -250,13 +253,10 @@
     "llama-cpp/Unsloth 页面推荐的工具调用参数.md",
     "ubuntu-system/OpenSSH-Server-安装与使用指南.md",
     "ubuntu-system/FRP 内网穿透全流程部署指南.md",
-    "ubuntu-system/frpc-systemd.md",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
     "openclaw/OpenClaw-安装与排错指南.md",
     "PLC/全阶段详细日程（112天）.md",
     "PLC/融合版PLC学习计划（16周）.md",
     "PLC",
-    "rocm/ROCm7-卸载与安装指南.md",
     "git-notes/git pull SSH 连接超时问题解决方案",
     "git-notes/SSH 连接超时问题解决方案",
     "openclaw/QQ机器人",

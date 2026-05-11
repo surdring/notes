@@ -28,7 +28,9 @@ lsblk -f
 创建一个目录作为挂载点：
 
 ```bash
-sudo mkdir -p /mnt/ntfs_drive
+sudo mkdir -p /mnt/ntfs_sdb3
+
+ntfs_sdb3
 ```
 
 ## 4. 临时挂载 NTFS 分区
@@ -50,11 +52,14 @@ sudo nano /etc/fstab
 添加以下行（替换 `/dev/sdXn` 为您的 NTFS 分区）：
 
 ```
-# NTFS 分区挂载
+# NTFS 分区挂载  241E25951E256152
 UUID=你的分区UUID  /mnt/ntfs_drive  ntfs-3g  defaults,windows_names,locale=zh_CN.UTF-8  0  0
 
 # 宿舍电脑
 UUID=5016E6F216E6D7CC  /mnt/easystore  ntfs-3g  rw,remove_hiberfile,windows_names,locale=zh_CN.UTF-8,uid=1000,gid=1000,umask=0022  0  0
+
+# 笔记本 26.04
+UUID=241E25951E256152  /mnt/easystore  ntfs-3g  rw,remove_hiberfile,windows_names,locale=zh_CN.UTF-8,uid=1000,gid=1000,umask=0022  0  0
 ```
 
 > 注意：要获取分区的 UUID，可以使用 `sudo blkid` 命令。
