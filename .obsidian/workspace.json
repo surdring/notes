@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "llama-cpp/模型部署指令集.md",
+                "file": "ubuntu-system/llama_cpp_systemd_guide.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "模型部署指令集"
+              "title": "llama_cpp_systemd_guide"
             }
           },
           {
@@ -55,16 +55,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ubuntu-system/llama_cpp_systemd_guide.md",
+                "file": "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "llama_cpp_systemd_guide"
+              "title": "ROCm-llama.cpp-MI50-构建与运行指南"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -226,15 +226,16 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "5cd699e70cfd8ce1",
+  "active": "c3a82459ef2e78bf",
   "lastOpenFiles": [
-    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
-    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
-    "ubuntu-system/frpc-systemd.md",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "docker/~gvfT8f5.tmp",
     "llama-cpp/模型部署指令集.md",
-    "rocm/升级到 ROCm 7.2.2 的步骤.md",
+    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
     "rocm/新版llama.cpp-gfx906三角求解solve修复.md",
+    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "llama-cpp/Llama.cpp 在 AMD MI50 上的部署指南.md",
+    "ubuntu-system/frpc-systemd.md",
+    "rocm/升级到 ROCm 7.2.2 的步骤.md",
     "rocm/ROCm_7.0.3_Ubuntu_24.04_安装指南.md",
     "vllm/huggingface_model_download_guide.md",
     "ubuntu-system/setup_smb_server_guide.md",
@@ -255,7 +256,6 @@
     "ubuntu-system/FRP 内网穿透全流程部署指南.md",
     "openclaw/OpenClaw-安装与排错指南.md",
     "PLC/全阶段详细日程（112天）.md",
-    "PLC/融合版PLC学习计划（16周）.md",
     "PLC",
     "git-notes/git pull SSH 连接超时问题解决方案",
     "git-notes/SSH 连接超时问题解决方案",

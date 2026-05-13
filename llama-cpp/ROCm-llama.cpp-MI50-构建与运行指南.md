@@ -93,6 +93,26 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
 # 该选项要求系统安装 rocWMMA 头文件（rocm-meta 包默认包含，或安装 rocwmma-dev/devel 包）
 ```
 
+```bash
+# mtp-clean
+git fetch origin pull/22673/head:mtp-clean
+git checkout mtp-clean
+
+
+export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
+
+rm -rf ~/workspace/llama.cpp/build-mtp &&
+HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
+  cmake -S . -B build-mtp \
+  -DGGML_HIP=ON \
+  -DGPU_TARGETS="$LLAMACPP_ROCM_ARCH" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DGGML_CURL=ON \
+  && cmake --build build-mtp --config Release -j"$(nproc)"
+  
+# 构建完成后运行时使用 ./build-mtp/bin/llama-server
+```
+
 #### 选项说明
 
 - `HIPCXX="$(hipconfig -l)/clang"`：使用 ROCm 自带的 `hipclang` 作为 HIP 编译器。
