@@ -31,6 +31,8 @@ lsblk -f
 sudo mkdir -p /mnt/ntfs_sdb3
 
 ntfs_sdb3
+
+sudo mkdir -p /mnt/easystore
 ```
 
 ## 4. 临时挂载 NTFS 分区
@@ -71,6 +73,8 @@ UUID=241E25951E256152  /mnt/easystore  ntfs-3g  rw,remove_hiberfile,windows_name
 ## 7. 测试挂载
 
 ```bash
+systemctl daemon-reload
+
 sudo mount -a
 ```
 

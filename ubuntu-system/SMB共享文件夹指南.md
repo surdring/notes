@@ -42,8 +42,8 @@ sudo nano /etc/samba/smb.conf
 [share]
    comment = share folder
    browseable = no
-   path = /mnt/sata
-   create mask = 0644
+   path = /mnt/easystore
+   create mask = 0664
    directory mask = 0755
    valid users = zhengxueen
    invalid users = root
@@ -52,8 +52,9 @@ sudo nano /etc/samba/smb.conf
    public = no
    available = yes
    writable = yes
-   hosts allow = 172.16.100.202, 172.16.100.180, 127.0.0.1
-   hosts deny = ALL
+   # hosts allow = 172.16.100.202, 172.16.100.180, 127.0.0.1
+   hosts allow = 127.0.0.1, 192.168.1.0/24
+   ; hosts deny = ALL
    min protocol = SMB2
 ```
 
