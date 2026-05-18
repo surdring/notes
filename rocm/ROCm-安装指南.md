@@ -1,13 +1,16 @@
-# ROCm 安装与升级指南（Ubuntu 24.04 + MI50）
+# ROCm 安装与升级指南（Ubuntu 24.04/26.04 + MI50）
 
-> 适用场景：在 Ubuntu 24.04（noble）上，卸载当前 ROCm 与 amdgpu-dkms，重新安装或升级到目标版本。
+> 适用场景：在 Ubuntu 24.04 LTS（noble）或 26.04 LTS（resolute）上，卸载当前 ROCm 与 amdgpu-dkms，重新安装或升级到目标版本。
 >
 > GPU 示例环境：AMD Instinct MI50（gfx906）。
 
-系统信息：
-- **OS**: Ubuntu 24.04 (Noble)
-- **内核**: 6.14.0-37-generic
-- **GPU**: AMD Instinct MI50 (gfx906)
+系统信息参考：
+| Ubuntu 版本 | 代号 | 内核版本参考 | ROCm 支持情况 |
+|-------------|------|-------------|--------------|
+| 24.04 LTS | noble | 6.8+ | 需手动添加 ROCm 源 |
+| 26.04 LTS | resolute | 7.0+ | 系统仓库已含 ROCm，但版本可能非最新 |
+
+> 本文以 ROCm 7.2.2 为目标版本。若系统仓库中已有 ROCm（26.04+），需通过 APT 优先级锁定确保安装指定版本。
 
 ---
 
@@ -38,13 +41,20 @@ sudo pkill -f llama-cli || true
 ```bash
 sudo apt update
 
-# 卸载 ROCm / HIP / HSA 相关包
-sudo apt remove --purge -y \
-  'rocm*' \
-  'hip-*' \
-  'hsa-rocr*' \
-  'hsakmt-roct*' \
-  'comgr*'
+# 卸载 ROCm 相关包
+sudo apt remove --purge -y 'rocm*'
+
+# 卸载 HIP 相关包
+sudo apt remove --purge -y 'hip-*'
+
+# 卸载 HSA 相关包
+sudo apt remove --purge -y 'hsa-rocr*'
+
+# 卸载 HSA 内核模块相关包
+sudo apt remove --purge -y 'hsakmt-roct*'
+
+# 卸载 Code Object Manager
+sudo apt remove --purge -y 'comgr*'
 
 # 清理依赖
 sudo apt autoremove -y
@@ -97,20 +107,57 @@ sudo apt update
 
 ## 5. 注册目标版本仓库
 
-
-
 > 如果之前已经安装过相同版本的 `amdgpu-install`，再次安装是幂等的，可以直接覆盖。
 
-### 升级到 ROCm 7.2.2
+### 方案 A：Ubuntu 24.04 (noble)
 
 ```bash
 wget https://repo.radeon.com/amdgpu-install/7.2.2/ubuntu/noble/amdgpu-install_7.2.2.70202-1_all.deb
 sudo apt install ./amdgpu-install_7.2.2.70202-1_all.deb
+# graphics/7.2.2 路径不存在，需回退到 7.2.1
 sudo sed -i "s|graphics/7.2.2|graphics/7.2.1|" /etc/apt/sources.list.d/rocm.list
 sudo apt update
 ```
 
-> **注意**：`sed` 命令将 `graphics/7.2.2` 替换为 `graphics/7.2.1`，因为 `graphics/7.2.2` 路径目前不存在，需回退到 `7.2.1` 才能正常拉取 amdgpu 驱动包。
+### 方案 B：Ubuntu 26.04 (resolute)
+
+ROCm 7.2.2 的 `amdgpu-install` 官方仅支持 noble（24.04），在 26.04 上需手动配置仓库并设置 APT 优先级，以覆盖系统自带的 ROCm 版本。
+
+```bash
+# 1. 安装 noble 版本的 amdgpu-install（仅用于注册 key 和源）
+wget https://repo.radeon.com/amdgpu-install/7.2.2/ubuntu/noble/amdgpu-install_7.2.2.70202-1_all.deb
+sudo apt install ./amdgpu-install_7.2.2.70202-1_all.deb
+
+# 2. 将源中的 noble 改为 resolute，匹配当前系统发行版
+sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/rocm.list
+sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/amdgpu.list
+
+# 3. graphics/7.2.2 路径不存在，回退到 7.2.1
+sudo sed -i "s|graphics/7.2.2|graphics/7.2.1|" /etc/apt/sources.list.d/rocm.list
+
+# 4. 设置 APT 优先级，确保 ROCm 7.2.2 覆盖系统自带的版本
+sudo tee /etc/apt/preferences.d/rocm-pin-600 << 'EOF'
+Package: *
+Pin: release o=AMD
+Pin-Priority: 600
+
+Package: rocm-*
+Pin: release o=AMD
+Pin-Priority: 600
+
+Package: hip-*
+Pin: release o=AMD
+Pin-Priority: 600
+EOF
+
+# 5. 更新源
+sudo apt update
+
+# 6. 验证版本候选
+apt policy rocm
+# 应显示候选为 7.2.2.70202-86~24.04（来自 AMD 源），
+# 而非 7.1.x（来自 Ubuntu 仓库）
+```
 
 ---
 
@@ -135,7 +182,7 @@ curl -sSL https://www.geekery.cn/sh/radeon/set_radeon_mirror.sh | sudo bash
 
 ### 方案 A：跳过 dkms，使用 in-tree 驱动（推荐纯推理场景）
 
-内核 6.14.0-37-generic 已内置 in-tree `amdgpu` 驱动，足够 ROCm 用户态库使用，无需额外安装 `amdgpu-dkms`。
+Ubuntu 24.04 内核 6.8+、26.04 内核 7.0+ 均已内置 in-tree `amdgpu` 驱动，足够 ROCm 用户态库使用，无需额外安装 `amdgpu-dkms`。
 
 ```bash
 # 阻止 dkms 被意外安装
@@ -170,6 +217,7 @@ sudo apt install rocm
 
 - `amdgpu-install` 包已配置好 ROCm 的 APT 源，`sudo apt install rocm` 会拉取目标版本的 ROCm meta package 及其依赖；
 - 安装 `rocm` 元包会拉取约 223 个软件包，约 6.6 GB 下载、27.4 GB 磁盘占用，耗时较长；
+- **Ubuntu 26.04 注意**：由于系统仓库自带 ROCm，必须确保已设置 [第 5 节方案 B](#5-注册目标版本仓库) 中的 APT 优先级配置文件 `/etc/apt/preferences.d/rocm-pin-600`，否则 apt 可能安装 Ubuntu 自带的旧版 ROCm（7.1.x）而非目标版本（7.2.2）；
 - 安装完成后 `update-alternatives` 自动将 `/opt/rocm` 指向对应版本目录（如 `/opt/rocm-7.2.2`），并注册 `hipcc`、`rocm-smi`、`rocprof` 等命令到 `/usr/bin/`。
 
 > 提示：执行 `sudo usermod -a -G render,video $LOGNAME` 后需要重新登录当前用户会话，新的组权限才会生效。
@@ -251,11 +299,11 @@ tar --zstd -xvf ~/下载/rocblas-7.2.2-1-x86_64.pkg.tar.zst
 检查有哪些 `gfx906` 相关文件：
 
 ```bash
-cd ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library
+# 列出解压目录中所有带 gfx906 的内核文件
+ls ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library/*gfx906* 2>/dev/null | head -10
 
-# 列出所有带 gfx906 的内核文件
-ls *gfx906* 2>/dev/null || find . -name '*gfx906*'
-ls *gfx1010* 2>/dev/null || find . -name '*gfx1010*'
+# 也可检查 gfx1010（如果本机需要）
+ls ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library/*gfx1010* 2>/dev/null | head -10
 ```
 
 常见文件示例（不完整，仅示意）：
@@ -267,29 +315,44 @@ ls *gfx1010* 2>/dev/null || find . -name '*gfx1010*'
 
 ### 11.4 拷贝到本机 ROCm 的 rocBLAS 目录
 
-```bash
-# 确保目标目录存在
-sudo mkdir -p /opt/rocm/lib/rocblas/library
+rocBLAS 运行时会从 `librocblas.so` 所在目录的相对路径 `../lib/rocblas/library/` 加载内核文件。因此，必须拷贝到版本化路径（如 `/opt/rocm-7.2.2/lib/rocblas/library/`），而非 `/opt/rocm/lib/rocblas/library/`（两者可能是不同目录）。
 
-# 在上一步的 ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library 目录中执行：
-sudo cp *gfx906* /opt/rocm/lib/rocblas/library/
-sudo cp *gfx1010* /opt/rocm/lib/rocblas/library/
+```bash
+# 确认本机 ROCm 版本化路径
+ROCM_VERSION_DIR="/opt/rocm-$(rocm-config --version 2>/dev/null || echo '7.2.2')"
+TARGET_DIR="${ROCM_VERSION_DIR}/lib/rocblas/library"
+
+# 确保目标目录存在
+sudo mkdir -p "${TARGET_DIR}"
+
+# 从 Arch 包解压目录拷贝 gfx906/gfx1010 内核文件
+cd ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library
+
+sudo cp *gfx906* "${TARGET_DIR}/"
+sudo cp *gfx1010* "${TARGET_DIR}/"
+
+# 验证拷贝结果
+echo "Target: ${TARGET_DIR}"
+ls -la "${TARGET_DIR}"/*gfx906* | wc -l
 ```
 
 ### 11.5 注意事项
 
 - **只拷贝 kernel 文件，不要替换系统主库**
-  仅从 `~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library/` 目录中选择 `*gfx906*` 文件复制到 `/opt/rocm/lib/rocblas/library/`，**不要覆盖 `/opt/rocm/lib/librocblas.so*` 等主库**，以降低破坏现有 ROCm 环境的风险。
+  仅从 `~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library/` 目录中选择 `*gfx906*` 文件复制到版本化路径（如 `/opt/rocm-7.2.2/lib/rocblas/library/`），**不要覆盖 `/opt/rocm-7.2.2/lib/librocblas.so*` 等主库**，以降低破坏现有 ROCm 环境的风险。
 - **版本不完全匹配的风险**
   例如：Arch 包里的 `rocblas 6.4.4` 对应 ROCm 6.4，而当前系统使用的是 ROCm 7.x。理论上 ABI 不保证完全兼容，但社区实践中大部分场景可以正常加载并工作；若不兼容，会在运行时报 `rocblas` kernel 加载失败之类的错误。
 - **建议测试**
-  操作前可备份原来的 `/opt/rocm/lib/rocblas/library/`（如果已有内容），拷贝后先用简单的 `rocblas-bench` 或依赖 rocBLAS 的小程序测试一轮，再跑正式负载。例如：
+  操作前可备份原来的 rocblas kernel 目录（如果已有内容），拷贝后先用简单的 `rocblas-bench` 或依赖 rocBLAS 的小程序测试一轮，再跑正式负载。例如：
 
   ```bash
+  # 先确认 ROCm 版本化路径
+  ROCM_VERSION_DIR="/opt/rocm-$(rocm-config --version 2>/dev/null || echo '7.2.2')"
+
   # 备份当前 rocblas kernel 目录（如果存在）
-  if [ -d /opt/rocm/lib/rocblas/library ]; then
-    sudo cp -a /opt/rocm/lib/rocblas/library \
-      /opt/rocm/lib/rocblas/library.backup-"$(date +%Y%m%d-%H%M%S)"
+  if [ -d "${ROCM_VERSION_DIR}/lib/rocblas/library" ]; then
+    sudo cp -a "${ROCM_VERSION_DIR}/lib/rocblas/library" \
+      "${ROCM_VERSION_DIR}/lib/rocblas/library.backup-$(date +%Y%m%d-%H%M%S)"
   fi
   ```
 

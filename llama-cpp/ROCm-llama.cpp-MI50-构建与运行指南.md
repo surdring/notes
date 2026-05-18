@@ -1,6 +1,6 @@
-# 在 Ubuntu 24.04 + ROCm 7.x 上为 AMD MI50 构建 ROCm/llama.cpp
+# 在 Ubuntu 24.04/26.04 + ROCm 7.x 上为 AMD MI50 构建 ROCm/llama.cpp
 
-> 目标：在已正确安装 **ROCm 7.x** 的 Ubuntu 24.04 系统上，为 AMD Instinct **MI50（gfx906）** 从 AMD 官方仓库 **ROCm/llama.cpp** 构建并运行 HIP 版 `llama.cpp`。
+> 目标：在已正确安装 **ROCm 7.x** 的 Ubuntu 24.04（noble）或 26.04（resolute）系统上，为 AMD Instinct **MI50（gfx906）** 从 AMD 官方仓库 **ROCm/llama.cpp** 构建并运行 HIP 版 `llama.cpp`。
 >
 > 适用 GPU：AMD Instinct MI50（`gfx906`）。
 
@@ -8,10 +8,14 @@
 
 ## 1. 环境前提
 
-- 操作系统：Ubuntu 24.04（noble）
-- GPU：AMD Instinct MI50，架构代号 `gfx906`
-- ROCm：7.x 系列（例如 7.0.2 / 7.0.3），已通过 AMD 官方仓库安装
-- 驱动：`amdgpu-dkms` 已正确加载
+| 项目 | Ubuntu 24.04 (noble) | Ubuntu 26.04 (resolute) |
+|------|---------------------|------------------------|
+| 内核 | 6.8+ | 7.0+ |
+| GPU | AMD Instinct MI50（gfx906） | 同左 |
+| ROCm | 7.x 系列，AMD 官方仓库安装 | 7.x 系列，AMD 官方仓库安装 |
+| 驱动 | in-tree amdgpu（推荐）或 amdgpu-dkms | in-tree amdgpu（推荐）或 amdgpu-dkms |
+
+> **Ubuntu 26.04 注意**：由于系统仓库已自带 ROCm 7.1.x，安装 ROCm 7.2.2 时需设置 APT 优先级锁定（参见 [ROCm 安装指南](../rocm/ROCm-安装指南.md) 第 5 节方案 B），否则可能安装旧版。
 
 ### 1.1 验证 ROCm 是否正常
 
@@ -77,14 +81,18 @@ pwd
 # 例如：/home/zhengxueen/workspace/llama.cpp
 
 # 使用 ROCm 自带工具自动探测 hipclang 和 HIP 路径
+cd /home/zhengxueen/workspace/llama.cpp
+
 export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
 
 rm -rf ~/workspace/llama.cpp/build-hip &&
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
   cmake -S . -B build-hip \
   -DGGML_HIP=ON \
-  -DGPU_TARGETS="$LLAMACPP_ROCM_ARCH" \
+  -DGPU_TARGETS=gfx906 \
   -DCMAKE_BUILD_TYPE=Release \
+  -DGGML_HIP_ROCWMMA_FATTN=ON \
+  -DCMAKE_PREFIX_PATH=/opt/rocm-7.2.2/lib/cmake \
   -DGGML_CURL=ON \
   && cmake --build build-hip --config Release -j"$(nproc)"
 
@@ -107,6 +115,7 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
   -DGGML_HIP=ON \
   -DGPU_TARGETS="$LLAMACPP_ROCM_ARCH" \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_PREFIX_PATH=/opt/rocm-7.2.2/lib/cmake \
   -DGGML_CURL=ON \
   && cmake --build build-mtp --config Release -j"$(nproc)"
   
@@ -122,6 +131,7 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
 - `-DCMAKE_BUILD_TYPE=Release`：生成优化后的 Release 构建。
 - `-DGGML_CURL=ON`：启用 HTTP/HTTPS 支持（例如下载模型、通过 URL 加载资源）。旧版 `-DLLAMA_CURL` 已弃用。
 - `-DGGML_HIP_ROCWMMA_FATTN=ON`（可选）：利用 rocWMMA 增强 RDNA3+/CDNA 架构上的 Flash Attention 性能。需安装 rocWMMA 头文件。
+- `-DCMAKE_PREFIX_PATH=/opt/rocm-7.2.2/lib/cmake`：指定 ROCm cmake 模块路径。**Ubuntu 26.04 必须添加**，因为 llama.cpp 的 CMakeLists.txt 仅搜索 `${ROCM_PATH}/lib64/cmake`，而 ROCm 7.2.2 的模块在 `lib/cmake` 下（不含 `64` 后缀）。24.04 上如果 `lib64` 不存在也同样需要此选项。
 - `-j"$(nproc)"`：使用全部 CPU 核心并行编译。
 
 
@@ -154,6 +164,23 @@ HIP_DEVICE_LIB_PATH=/opt/rocm-7.2.2/amdgcn/bitcache \
 ```bash
 export HSA_OVERRIDE_GFX_VERSION=9.0.6
 ```
+
+**`lld: error while loading shared libraries: libxml2.so.2: cannot open shared object file`（Ubuntu 26.04）**
+
+ROCm 7.2.2 的 `lld` 依赖 `libxml2.so.2`（SONAME v2），而 Ubuntu 26.04 仅提供 `libxml2.so.16`（SONAME v16）。创建软链接即可解决：
+
+```bash
+sudo ln -s /usr/lib/x86_64-linux-gnu/libxml2.so.16 /usr/lib/x86_64-linux-gnu/libxml2.so.2
+sudo ldconfig
+
+# 验证
+ldd /opt/rocm-7.2.2/lib/llvm/bin/lld 2>/dev/null | grep libxml2
+# 应显示：libxml2.so.2 => /usr/lib/x86_64-linux-gnu/libxml2.so.2
+```
+
+**`By not providing "Findhip.cmake" ... could not find hip-config.cmake`（Ubuntu 26.04）**
+
+ROCm 7.2.2 的 cmake 模块位于 `lib/cmake` 而非 `lib64/cmake`，需通过 `-DCMAKE_PREFIX_PATH` 显式指定（参见上方主命令中的 `-DCMAKE_PREFIX_PATH` 选项）。
 
 ---
 
