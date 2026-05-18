@@ -64,7 +64,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -226,8 +226,9 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "c3a82459ef2e78bf",
+  "active": "5cd699e70cfd8ce1",
   "lastOpenFiles": [
+    "llama-cpp/模型部署指令集.md",
     "通用模板/~gvfRWp3.tmp",
     "ubuntu-system/llama_cpp_systemd_guide.md",
     "开发-运维/skills/web-design-guidelines/SKILL.md",
@@ -263,7 +264,6 @@
     "开发-运维/skills/vercel-react-native-skills/metadata.json",
     "开发-运维/skills/vercel-react-native-skills",
     "开发-运维/skills/vercel-react-best-practices/rules",
-    "开发-运维/skills/vercel-react-best-practices/metadata.json",
     "weknora-docs/images/settings.png",
     "weknora-docs/images/qa.png",
     "weknora-docs/images/pipeline2.jpeg",

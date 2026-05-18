@@ -1024,18 +1024,18 @@ cmake --build build-hip -j$(nproc)
 
 llama-server 提供以下多 GPU 参数（参考 [官方 server 文档](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)）：
 
-| 参数 | 说明 | 双卡推荐值 |
-|---|---|---|
-| `-sm, --split-mode {none,layer,row}` | 多 GPU 分割模式 | `row`（tensor 并行，适合推理）或 `layer`（层分割） |
-| `-ts, --tensor-split N0,N1,...` | 各 GPU 的 tensor 分配比例 | `1,2`（对应 16GB:32GB = 1:2） |
-| `-mg, --main-gpu INDEX` | 主 GPU 索引 | `1`（32GB 卡为主，承担更多计算） |
-| `-ngl, --gpu-layers N` | GPU offload 层数 | `999`（全部 offload） |
-| `-dev, --device <dev1,dev2,..>` | 指定设备 | `hip:0,hip:1` |
-| `-fa, --flash-attn` | Flash Attention | `on`（TCQ 推荐开启） |
-| `-ctk, --cache-type-k` | KV cache Key 量化类型 | `turbo4`（默认推荐） |
-| `-ctv, --cache-type-v` | KV cache Value 量化类型 | `turbo4`（默认推荐） |
-| `-cram, --cache-ram N` | 固定大小 RAM 缓存 | `0`（全放 VRAM） |
-| `-np, --parallel N` | 并行序列数 | `1`（双卡推理建议从 1 开始） |
+| 参数                                   | 说明                  | 双卡推荐值                               |
+| ------------------------------------ | ------------------- | ----------------------------------- |
+| `-sm, --split-mode {none,layer,row}` | 多 GPU 分割模式          | `row`（tensor 并行，适合推理）或 `layer`（层分割） |
+| `-ts, --tensor-split N0,N1,...`      | 各 GPU 的 tensor 分配比例 | `1,2`（对应 16GB:32GB = 1:2）           |
+| `-mg, --main-gpu INDEX`              | 主 GPU 索引            | `1`（32GB 卡为主，承担更多计算）                |
+| `-ngl, --gpu-layers N`               | GPU offload 层数      | `999`（全部 offload）                   |
+| `-dev, --device <dev1,dev2,..>`      | 指定设备                | `hip:0,hip:1`                       |
+| `-fa, --flash-attn`                  | Flash Attention     | `on`（TCQ 推荐开启）                      |
+| `-ctk, --cache-type-k`               | KV cache Key 量化类型   | `turbo4`（默认推荐）                      |
+| `-ctv, --cache-type-v`               | KV cache Value 量化类型 | `turbo4`（默认推荐）                      |
+| `-cram, --cache-ram N`               | 固定大小 RAM 缓存         | `0`（全放 VRAM）                        |
+| `-np, --parallel N`                  | 并行序列数               | `1`（双卡推理建议从 1 开始）                   |
 
 > **split-mode 说明**：
 > - `layer`：按层分割，不同 GPU 负责不同层。简单但层间通信开销较大。
