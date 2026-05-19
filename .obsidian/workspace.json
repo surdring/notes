@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "llama-cpp/模型部署指令集.md",
+                "file": "ubuntu-system/llama_cpp_systemd_guide.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "模型部署指令集"
+              "title": "llama_cpp_systemd_guide"
             }
           }
         ],
@@ -228,15 +228,10 @@
   },
   "active": "5cd699e70cfd8ce1",
   "lastOpenFiles": [
-    "指南/Hugging Face 国内镜像网站 (hf-mirror.com) 使用指南.md",
-    "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
-    "llama-cpp/模型部署指令集.md",
-    "通用模板/~gvfRWp3.tmp",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
+    "ubuntu-system/ToDesk-安装与问题处理指南.md",
+    "rocm/Ubuntu-26.04-ROCm-llama.cpp-问题排查.md",
     "开发-运维/skills/web-design-guidelines/SKILL.md",
     "开发-运维/skills/web-design-guidelines",
-    "开发-运维/skills/vercel-cli-with-tokens/SKILL.md",
-    "开发-运维/skills/vercel-cli-with-tokens",
     "开发-运维/skills/vercel-react-view-transitions/references/patterns.md",
     "开发-运维/skills/vercel-react-view-transitions/references/nextjs.md",
     "开发-运维/skills/vercel-react-view-transitions/references/implementation.md",
@@ -260,19 +255,24 @@
     "开发-运维/skills/vercel-react-native-skills/rules/scroll-position-no-state.md",
     "开发-运维/skills/vercel-react-native-skills/rules/rendering-text-in-text-component.md",
     "开发-运维/skills/vercel-react-native-skills/rules/rendering-no-falsy-and.md",
+    "开发-运维/skills/vercel-react-native-skills/rules/react-state-minimize.md",
+    "开发-运维/skills/vercel-react-native-skills/rules/react-state-fallback.md",
+    "开发-运维/skills/vercel-react-native-skills/rules/react-state-dispatcher.md",
     "开发-运维/skills/vercel-react-native-skills/rules",
     "开发-运维/skills/vercel-react-native-skills/metadata.json",
     "开发-运维/skills/vercel-react-native-skills",
     "开发-运维/skills/vercel-react-best-practices/rules",
+    "开发-运维/skills/vercel-react-best-practices/metadata.json",
+    "开发-运维/skills/vercel-react-best-practices",
+    "开发-运维/skills/figma/assets/icon.svg",
+    "开发-运维/skills/figma/assets/figma-small.svg",
+    "开发-运维/skills/figma/assets/figma.png",
     "weknora-docs/images/settings.png",
     "weknora-docs/images/qa.png",
     "weknora-docs/images/pipeline2.jpeg",
     "weknora-docs/images/pipeline.png",
     "weknora-docs/images/pipeline.jpg",
     "weknora-docs/images/logo.png",
-    "weknora-docs/images/knowledges.png",
-    "weknora-docs/images/knowledgebases.png",
-    "weknora-docs/images/graph3.png",
-    "weknora-docs/images/graph2.png"
+    "weknora-docs/images/knowledges.png"
   ]
 }
