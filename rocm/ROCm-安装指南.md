@@ -41,19 +41,15 @@ sudo pkill -f llama-cli || true
 ```bash
 sudo apt update
 
-# 卸载 ROCm 相关包
+
 sudo apt remove --purge -y 'rocm*'
 
-# 卸载 HIP 相关包
 sudo apt remove --purge -y 'hip-*'
 
-# 卸载 HSA 相关包
 sudo apt remove --purge -y 'hsa-rocr*'
 
-# 卸载 HSA 内核模块相关包
 sudo apt remove --purge -y 'hsakmt-roct*'
 
-# 卸载 Code Object Manager
 sudo apt remove --purge -y 'comgr*'
 
 # 清理依赖
@@ -128,9 +124,12 @@ ROCm 7.2.2 的 `amdgpu-install` 官方仅支持 noble（24.04），在 26.04 上
 wget https://repo.radeon.com/amdgpu-install/7.2.2/ubuntu/noble/amdgpu-install_7.2.2.70202-1_all.deb
 sudo apt install ./amdgpu-install_7.2.2.70202-1_all.deb
 
-# 2. 将源中的 noble 改为 resolute，匹配当前系统发行版
-sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/rocm.list
-sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/amdgpu.list
+# 2. 注意：不要将 noble 改为 resolute！
+#    AMD 官方仓库只有 noble（24.04）的包，这些包在 resolute（26.04）上兼容运行。
+#    若改为 resolute 会导致 apt update 404 报错，APT 回退到 Ubuntu 系统自带的 7.1.0。
+#    以下命令不要执行：
+#   sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/rocm.list
+#   sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/amdgpu.list
 
 # 3. graphics/7.2.2 路径不存在，回退到 7.2.1
 sudo sed -i "s|graphics/7.2.2|graphics/7.2.1|" /etc/apt/sources.list.d/rocm.list
@@ -175,6 +174,16 @@ curl -sSL https://www.geekery.cn/sh/radeon/set_radeon_mirror.sh | sudo bash
 - `rocm.list` 中的 graphics: `repo.radeon.com/graphics` → `radeon.geekery.cn/graphics`
 
 > 镜像来源：https://xmind.fun/free-service/radeon-mirror
+>
+> **镜像不可达时**：该镜像偶尔会连接超时（实测偶发）。若 `apt update` 提示无法连接镜像，可暂时切回官方源：
+> ```bash
+> # 切回官方源
+> sudo sed -i 's|radeon.geekery.cn|repo.radeon.com|g' /etc/apt/sources.list.d/rocm.list /etc/apt/sources.list.d/amdgpu.list
+> sudo apt update
+> # 安装完成后，待镜像恢复可再切回来
+> ```
+>
+> 切换后建议执行 `sudo apt update` 确认源正常工作。
 
 ---
 
@@ -217,6 +226,7 @@ sudo apt install rocm
 
 - `amdgpu-install` 包已配置好 ROCm 的 APT 源，`sudo apt install rocm` 会拉取目标版本的 ROCm meta package 及其依赖；
 - 安装 `rocm` 元包会拉取约 223 个软件包，约 6.6 GB 下载、27.4 GB 磁盘占用，耗时较长；
+  若下载速度仅几 KB/s（官方源直连典型速度），请检查是否已按[第 6 节](#6-切换国内镜像推荐)配置国内镜像；
 - **Ubuntu 26.04 注意**：由于系统仓库自带 ROCm，必须确保已设置 [第 5 节方案 B](#5-注册目标版本仓库) 中的 APT 优先级配置文件 `/etc/apt/preferences.d/rocm-pin-600`，否则 apt 可能安装 Ubuntu 自带的旧版 ROCm（7.1.x）而非目标版本（7.2.2）；
 - 安装完成后 `update-alternatives` 自动将 `/opt/rocm` 指向对应版本目录（如 `/opt/rocm-7.2.2`），并注册 `hipcc`、`rocm-smi`、`rocprof` 等命令到 `/usr/bin/`。
 
@@ -318,8 +328,12 @@ ls ~/tmp_rocblas_arch/opt/rocm/lib/rocblas/library/*gfx1010* 2>/dev/null | head 
 rocBLAS 运行时会从 `librocblas.so` 所在目录的相对路径 `../lib/rocblas/library/` 加载内核文件。因此，必须拷贝到版本化路径（如 `/opt/rocm-7.2.2/lib/rocblas/library/`），而非 `/opt/rocm/lib/rocblas/library/`（两者可能是不同目录）。
 
 ```bash
-# 确认本机 ROCm 版本化路径
-ROCM_VERSION_DIR="/opt/rocm-$(rocm-config --version 2>/dev/null || echo '7.2.2')"
+# � ROCm 版 ROCm 版本化路径
+# 例如：ls -d /opt/rocm-*
+# ROCM_VERSION_DIR="/opt/rocm-7.2.2"
+# 或使用系统默认版本
+ROCM_VERSION_DIR="/opt/rocm-$(rocm-config --version 2>/dev/null || echo '7.2.2')" && echo "$ROCM_VERSION_DIR"
+ROCM_VERSION_DIR="/opt/rocm-7.2.2"
 TARGET_DIR="${ROCM_VERSION_DIR}/lib/rocblas/library"
 
 # 确保目标目录存在
@@ -334,6 +348,7 @@ sudo cp *gfx1010* "${TARGET_DIR}/"
 # 验证拷贝结果
 echo "Target: ${TARGET_DIR}"
 ls -la "${TARGET_DIR}"/*gfx906* | wc -l
+ls -la "${TARGET_DIR}"/*gfx1010* | wc -l
 ```
 
 ### 11.5 注意事项

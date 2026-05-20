@@ -1,8 +1,8 @@
 # 在 Ubuntu 24.04/26.04 + ROCm 7.x 上为 AMD MI50 构建 ROCm/llama.cpp
 
-> 目标：在已正确安装 **ROCm 7.x** 的 Ubuntu 24.04（noble）或 26.04（resolute）系统上，为 AMD Instinct **MI50（gfx906）** 从 AMD 官方仓库 **ROCm/llama.cpp** 构建并运行 HIP 版 `llama.cpp`。
+> 目标：在已正确安装 **ROCm 7.x** 的 Ubuntu 24.04（noble）或 26.04（resolute）系统上，为 AMD Instinct **MI50（gfx906）** 及同机其他 AMD GPU 从 AMD 官方仓库 **ROCm/llama.cpp** 构建并运行 HIP 版 `llama.cpp`。
 >
-> 适用 GPU：AMD Instinct MI50（`gfx906`）。
+> 适用 GPU：AMD Instinct MI50（`gfx906`），系统同时检测到的其他 AMD GPU 架构（如 `gfx1010`）。
 
 ---
 
@@ -11,7 +11,7 @@
 | 项目 | Ubuntu 24.04 (noble) | Ubuntu 26.04 (resolute) |
 |------|---------------------|------------------------|
 | 内核 | 6.8+ | 7.0+ |
-| GPU | AMD Instinct MI50（gfx906） | 同左 |
+| GPU | AMD Instinct MI50（gfx906）+ 其他 AMD GPU（如 gfx1010） | 同左 |
 | ROCm | 7.x 系列，AMD 官方仓库安装 | 7.x 系列，AMD 官方仓库安装 |
 | 驱动 | in-tree amdgpu（推荐）或 amdgpu-dkms | in-tree amdgpu（推荐）或 amdgpu-dkms |
 
@@ -19,12 +19,14 @@
 
 ### 1.1 验证 ROCm 是否正常
 
+> **路径说明**：ROCm 安装完成后，`update-alternatives` 自动将 `/opt/rocm` 指向当前版本目录（如 `/opt/rocm-7.2.2`），并将 `hipcc`、`rocm-smi`、`rocprof` 等命令注册到 `/usr/bin/`，因此可直接使用裸命令访问。
+
 ```bash
-/opt/rocm/bin/rocminfo | grep -i gfx
-/opt/rocm/bin/hipcc --version
+rocminfo | grep -i gfx
+hipcc --version
 ```
 
-确认输出中包含 `gfx906`，且 `hipcc` 可以正常运行。
+确认输出中包含 `gfx906` 与 `gfx1010`（或当前系统上可用的 AMD GPU 架构），且 `hipcc` 可以正常运行。
 
 ---
 
@@ -36,25 +38,36 @@ mkdir -p ~/workspace && cd ~/workspace
 
 # 克隆 llama.cpp 官方仓库（ggml-org）
 git clone https://github.com/ggml-org/llama.cpp
-cd llama.cpp
+cd ~/workspace/llama.cpp
 ```
 
 > 说明：该仓库是 llama.cpp 的官方主线仓库，由 ggml 社区维护，已经内置了 ROCm/HIP 后端和多模态（如 Qwen3-VL）等最新特性。
 
 ---
 
-## 3. 为 MI50 设置 ROCm 架构
+## 3. 为本机 AMD GPU 设置 ROCm 架构
 
 AMD 官方文档推荐通过环境变量 `LLAMACPP_ROCM_ARCH` 指定要编译的 GPU 架构列表。
 
-### 3.1 只针对 MI50（gfx906）
+### 3.1 针对本机所有 AMD GPU（推荐）
+
+如果你的机器上有多块不同架构的 AMD GPU（例如同时有 `gfx906` 和 `gfx1010`），编译时需将两者都包含在内，二进制才能在任意一块 GPU 上运行。通过 `rocminfo | grep -i gfx` 查看本机所有 GPU 架构，然后一并指定：
 
 ```bash
-# 仅编译针对 MI50 的 kernel（推荐本机构建）
+# 根据 rocminfo 输出，为所有 AMD GPU 编译 kernel
+export LLAMACPP_ROCM_ARCH=gfx906,gfx1010
+```
+
+### 3.2 只针对单架构（可选）
+
+如果只在特定一块 GPU 上推理，可以只编译该架构以加快编译速度：
+
+```bash
+# 仅编译针对 MI50（gfx906）的 kernel
 export LLAMACPP_ROCM_ARCH=gfx906
 ```
 
-### 3.2 同时支持多种 AMD GPU（可选）
+### 3.3 同时支持多种 AMD GPU（可选）
 
 如果希望一个二进制在多种 AMD GPU 上通用，可以使用 AMD 文档给出的“宽范围”配置（编译时间更长）：
 
@@ -63,13 +76,13 @@ export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,\
   gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
 ```
 
-> 对于单机、只在 MI50 上使用的场景，**推荐只保留 `gfx906`**，编译速度更快、体积更小。
+> 对于单机、只在单一 GPU 架构上使用的场景，**可按需只保留对应的架构**（如仅 `gfx906`），编译速度更快、体积更小。
 
 ---
 
 ## 4. 使用 CMake + HIP 编译 ROCm/llama.cpp
 
-这里直接采用 llama.cpp 官方 build.md 中的 HIP 构建命令，将 `GPU_TARGETS` 固定为 MI50 的 `gfx906`。
+这里直接采用 llama.cpp 官方 build.md 中的 HIP 构建命令，根据本机 GPU 架构设置 `GPU_TARGETS`。
 
 ### 4.1 配置与构建
 
@@ -83,13 +96,13 @@ pwd
 # 使用 ROCm 自带工具自动探测 hipclang 和 HIP 路径
 cd /home/zhengxueen/workspace/llama.cpp
 
-export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
+export LLAMACPP_ROCM_ARCH=gfx906,gfx1010
 
 rm -rf ~/workspace/llama.cpp/build-hip &&
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
   cmake -S . -B build-hip \
   -DGGML_HIP=ON \
-  -DGPU_TARGETS=gfx906 \
+  -DGPU_TARGETS=gfx906,gfx1010 \
   -DCMAKE_BUILD_TYPE=Release \
   -DGGML_HIP_ROCWMMA_FATTN=ON \
   -DCMAKE_PREFIX_PATH=/opt/rocm-7.2.2/lib/cmake \
@@ -107,7 +120,7 @@ git fetch origin pull/22673/head:mtp-clean
 git checkout mtp-clean
 
 
-export LLAMACPP_ROCM_ARCH=gfx803,gfx900,gfx906,gfx908,gfx90a,gfx942,gfx1010,gfx1030,gfx1032,gfx1100,gfx1101,gfx1102
+export LLAMACPP_ROCM_ARCH=gfx906,gfx1010
 
 rm -rf ~/workspace/llama.cpp/build-mtp &&
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
@@ -127,7 +140,7 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
 - `HIPCXX="$(hipconfig -l)/clang"`：使用 ROCm 自带的 `hipclang` 作为 HIP 编译器。
 - `HIP_PATH="$(hipconfig -R)"`：自动发现当前 ROCm 安装前缀（通常为 `/opt/rocm`）。
 - `-DGGML_HIP=ON`：启用 ROCm/HIP 后端，使推理在 AMD GPU 上运行。
-- `-DGPU_TARGETS=gfx906`：指定要编译的 GPU 架构（旧版 `-DAMDGPU_TARGETS` 已弃用）。省略此选项则为当前系统所有 GPU 编译。
+- `-DGPU_TARGETS=gfx906,gfx1010`：指定要编译的 GPU 架构列表，多个架构用逗号分隔（旧版 `-DAMDGPU_TARGETS` 已弃用）。通过 `rocminfo | grep -i gfx` 获取本机所有架构并一并列出，确保编译出的二进制在每块 GPU 上均可运行。
 - `-DCMAKE_BUILD_TYPE=Release`：生成优化后的 Release 构建。
 - `-DGGML_CURL=ON`：启用 HTTP/HTTPS 支持（例如下载模型、通过 URL 加载资源）。旧版 `-DLLAMA_CURL` 已弃用。
 - `-DGGML_HIP_ROCWMMA_FATTN=ON`（可选）：利用 rocWMMA 增强 RDNA3+/CDNA 架构上的 Flash Attention 性能。需安装 rocWMMA 头文件。
@@ -153,7 +166,7 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
 HIP_DEVICE_LIB_PATH=/opt/rocm-7.2.2/amdgcn/bitcache \
   cmake -S . -B build-hip \
   -DGGML_HIP=ON \
-  -DGPU_TARGETS=gfx906 \
+  -DGPU_TARGETS=gfx906,gfx1010 \
   -DCMAKE_BUILD_TYPE=Release
 ```
 
@@ -437,7 +450,7 @@ HIP_VISIBLE_DEVICES=0 \
 
 #### 环境变量说明
 
-- `HIP_VISIBLE_DEVICES=0`：只使用第 0 块 AMD GPU（单卡 MI50 时一般就是这块）。
+- `HIP_VISIBLE_DEVICES=0`：只使用第 0 块 AMD GPU。如果系统中有多块 GPU（如 `gfx906` 和 `gfx1010`），可通过 `HIP_VISIBLE_DEVICES=0,1` 选择多块，或指定单块 `HIP_VISIBLE_DEVICES=1`（索引从 0 开始）。
 - `HSA_OVERRIDE_GFX_VERSION=9.0.6`：当 `rocminfo` 未正确识别 MI50 的 `gfx906` 时，可临时覆盖 GFX 版本；正常情况下可以保持注释状态，仅在出现 GFX 版本报错时启用。
 - `ROCR_VISIBLE_DEVICES=0`：在存在多块 AMD GPU 时，限制 ROCm 只看到指定设备；一般仅使用 `HIP_VISIBLE_DEVICES` 即可，如需更细粒度控制可结合本变量。
 
@@ -485,9 +498,9 @@ HIP_VISIBLE_DEVICES=0 \
   - 调整模型量化等级（如 Q4 / Q5 / Q6）。
   - 通过 `--n-gpu-layers` 控制 offload 层数（0 表示全部在 CPU，-1 表示能放多少放多少）。
 
-- **多 GPU（如果机器上不止一块 MI50）**
+- **多 GPU（多块同架构或不同架构 AMD GPU）**
 
-  - 通过 `HIP_VISIBLE_DEVICES=0,1` 选择多块 GPU；
+  - 通过 `HIP_VISIBLE_DEVICES=0,1` 选择多块 GPU；编译时需将各 GPU 架构均加入 `GPU_TARGETS`（如 `gfx906,gfx1010`）；
   - 在 `llama.cpp` 的文档中查阅多 GPU 相关参数（如 tensor-parallel 配置）。
 
 ---

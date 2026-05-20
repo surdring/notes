@@ -13,6 +13,8 @@
 | 3 | cmake 找不到 `hip-config.cmake` | ROCm 7.2.2 模块在 `lib/cmake`，cmake 默认搜索 `lib64/cmake` | 添加 `-DCMAKE_PREFIX_PATH=/opt/rocm-7.2.2/lib/cmake` |
 | 4 | rocBLAS 报错：无法读取 gfx906 的 TensileLibrary | ROCm 7.2.2 官方包已移除 gfx906 预编译内核 | 从 Arch Linux rocblas 包提取 gfx906 文件补充 |
 | 5 | llama-server 启动段错误（signal=ILL） | ROCm 版本过旧（7.1.1），gfx906 kernel 未正确编译 | 升级到 ROCm 7.2.2 并补全 gfx906 rocBLAS 内核 |
+| 6 | 安装 node | 系统未安装 Node.js | 使用 nodesource 官方脚本安装 |
+| 7 | `sudo apt install rocm` 下载极慢（~2.7 KB/s） | 官方源 `repo.radeon.com` 国内直连速度极慢 | 切换国内镜像 `radeon.geekery.cn` 加速 |
 
 ---
 
@@ -45,11 +47,14 @@ sudo apt update
 
 # 2. 重新安装 amdgpu-install（noble 版）
 wget https://repo.radeon.com/amdgpu-install/7.2.2/ubuntu/noble/amdgpu-install_7.2.2.70202-1_all.deb
-sudo apt install ./amdgpu-install_7.2.2.70202.deb
+sudo apt install ./amdgpu-install_7.2.2.70202-1_all.deb
 
-# 3. 将 noble 改为 resolute（匹配 26.04）
-sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/rocm.list
-sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/amdgpu.list
+# 3. 注意：不要将 noble 改为 resolute！
+#    AMD 官方仓库只有 noble（24.04）的包，包在 resolute（26.04）上兼容运行。
+#    若改成 resolute 会导致 apt update 404 报错，apt 回退到 Ubuntu 系统自带的 7.1.0。
+#    以下命令不要执行：
+#   sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/rocm.list
+#   sudo sed -i 's|noble|resolute|g' /etc/apt/sources.list.d/amdgpu.list
 
 # 4. graphics 回退到 7.2.1（7.2.2 路径不存在）
 sudo sed -i "s|graphics/7.2.2|graphics/7.2.1|" /etc/apt/sources.list.d/rocm.list
@@ -83,7 +88,7 @@ sudo apt install rocm
 ### 关键要点
 
 - Ubuntu 26.04 系统仓库自带 ROCm 7.1.x，**必须**通过 APT 优先级锁定才能安装 7.2.2。
-- `amdgpu-install` 官方仅支持 noble（24.04），在 resolute（26.04）上需手动修改源文件中的发行版代号。
+- `amdgpu-install` 官方仅支持 noble（24.04），在 resolute（26.04）上直接使用 noble 源即可（包向前兼容），**无需**修改源文件中的发行版代号。若改为 `resolute` 会导致 AMD 源 404。
 - `graphics` 路径确实不存在 `7.2.2` 版本，需回退到 `7.2.1`（不影响 rocm 主包的版本）。
 
 ---
@@ -258,6 +263,51 @@ sudo apt install -y nodejs
 node --version
 npm --version
 ```
+
+---
+
+## 问题 7：`sudo apt install rocm` 下载极慢
+
+### 现象
+
+执行 `sudo apt install rocm` 后，下载速度仅 ~2.7 KB/s，预估耗时 27 天以上：
+
+```
+20% [13 amd-smi-lib 1,269 kB/2,478 kB 51%]  2,727 B/s 27天 11小时 38分 26秒
+```
+
+### 根因
+
+ROCm 官方源 `repo.radeon.com` 位于海外，国内直连速度极慢（实测 ~2.7 KB/s）。需下载约 6.6 GB 数据，在官方源直连下几乎不可完成。
+
+### 解决方案
+
+使用国内社区镜像 `radeon.geekery.cn` 加速：
+
+```bash
+# 方案 A：使用自动脚本（推荐）
+curl -sSL https://www.geekery.cn/sh/radeon/set_radeon_mirror.sh | sudo bash
+sudo apt update
+sudo apt install rocm
+
+# 方案 B：手动替换源
+sudo sed -i 's|repo.radeon.com/rocm|radeon.geekery.cn/rocm|g' /etc/apt/sources.list.d/rocm.list
+sudo sed -i 's|repo.radeon.com/graphics|radeon.geekery.cn/graphics|g' /etc/apt/sources.list.d/rocm.list
+sudo sed -i 's|repo.radeon.com/amdgpu|radeon.geekery.cn/amdgpu|g' /etc/apt/sources.list.d/amdgpu.list
+sudo apt update
+sudo apt install rocm
+```
+
+### 镜像不可达时的备用方案
+
+如果镜像 `radeon.geekery.cn` 连接超时，可暂时切回官方源（速度慢但可用）：
+
+```bash
+sudo sed -i 's|radeon.geekery.cn|repo.radeon.com|g' /etc/apt/sources.list.d/rocm.list /etc/apt/sources.list.d/amdgpu.list
+sudo apt update
+```
+
+> 镜像状态波动属偶发现象，等待一段时间后重试通常可恢复。
 
 ---
 

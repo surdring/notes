@@ -52,8 +52,8 @@ sudo nano /etc/samba/smb.conf
    public = no
    available = yes
    writable = yes
-   # hosts allow = 172.16.100.202, 172.16.100.180, 127.0.0.1
-   hosts allow = 127.0.0.1, 192.168.1.0/24
+   hosts allow = 172.16.100.202, 172.16.100.180, 127.0.0.1
+   # hosts allow = 127.0.0.1, 192.168.1.0/24
    ; hosts deny = ALL
    min protocol = SMB2
 ```
