@@ -155,9 +155,16 @@ wget https://dl.todesk.com/linux/todesk-v4.7.2.0-amd64.deb
 sudo apt install ./todesk-v4.7.2.0-amd64.deb
 ```
 
-### 问题 4：Wayland 下无法运行
+### 问题 4：Wayland 下无法运行（被控端黑屏/无法显示界面）
 
-**现象**：在 Ubuntu 22.04+ 默认 Wayland 会话下，ToDesk 黑屏或无法正常显示。
+**现象**：
+- 在 Ubuntu 22.04+（包括 Ubuntu 26.04）默认 Wayland 会话下，ToDesk 黑屏或无法正常显示
+- **控制端**（Ubuntu 26.04）查看 **被控端**（Ubuntu 26.04）时无法显示界面
+- 但控制 **Windows 被控端** 时一切正常
+
+**原因**：
+
+Ubuntu 26.04 默认使用 **Wayland** 显示服务器，而 ToDesk 依赖 X11 协议来捕获屏幕内容。Wayland 出于安全考虑，限制了跨进程的屏幕捕获，导致 ToDesk 无法获取被控端的画面。而 Windows 使用自己的桌面会话协议，不受此限制。
 
 **检查当前会话类型**：
 
@@ -165,11 +172,58 @@ sudo apt install ./todesk-v4.7.2.0-amd64.deb
 echo $XDG_SESSION_TYPE
 ```
 
-**解决**：切换到 Xorg 会话。
+输出 `wayland` 即表示当前处于 Wayland 会话。
+
+---
+
+**解决方案一（推荐）：切换到 Xorg 会话**
+
+**临时切换**（一次有效）：
 1. 注销当前用户
 2. 在登录界面点击密码框旁边的齿轮图标
 3. 选择 **"Ubuntu on Xorg"**
 4. 重新登录
+
+**永久切换**（禁用 Wayland）：
+
+```bash
+sudo sed -i 's/#WaylandEnable=false/WaylandEnable=false/' /etc/gdm3/custom.conf
+```
+
+然后重启系统：
+
+```bash
+sudo reboot
+```
+
+切换回 Xorg 后，ToDesk 即可正常工作。
+
+---
+
+**解决方案二：安装 Wayland 屏幕捕获依赖（实验性）**
+
+如果不方便切换到 Xorg，可尝试安装 Wayland 屏幕共享所需的基础组件：
+
+```bash
+sudo apt install -y pipewire pipewire-pulse wireplumber \
+                    xdg-desktop-utils xdg-dbus-proxy
+```
+
+但请注意：ToDesk 对 Wayland 的原生支持有限，此方案**不一定能完全解决问题**，仍建议切换到 Xorg。
+
+---
+
+**解决方案三：使用支持 Wayland 的替代远程工具**
+
+如果必须使用 Wayland，推荐以下对 Wayland 支持更好的远程桌面工具：
+
+| 工具 | 安装命令 | Wayland 支持 |
+|------|----------|-------------|
+| **RustDesk** | `sudo apt install rustdesk` | 部分支持 |
+| **GNOME Remote Desktop**（RDP） | 系统自带 | 原生支持 |
+| **KRDC** | `sudo apt install krdc` | 支持 |
+
+其中 **GNOME Remote Desktop**（设置 → 共享 → 远程桌面）对 Ubuntu 26.04 的 Wayland 支持最好，推荐使用。
 
 ### 问题 5：查看 ToDesk 日志
 
