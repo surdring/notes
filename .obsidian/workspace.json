@@ -25,46 +25,14 @@
             "id": "583fd7e25b2066bd",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "rocm/新版llama.cpp-gfx906三角求解solve修复.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "新版llama.cpp-gfx906三角求解solve修复"
-            }
-          },
-          {
-            "id": "5cd699e70cfd8ce1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "ubuntu-system/FRP 内网穿透全流程部署指南.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "FRP 内网穿透全流程部署指南"
-            }
-          },
-          {
-            "id": "7543fd5bc96af0ca",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "ubuntu-system/frpc-systemd.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "frpc-systemd"
+              "title": "新标签页"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -226,53 +194,53 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "7543fd5bc96af0ca",
+  "active": "583fd7e25b2066bd",
   "lastOpenFiles": [
-    "ubuntu-system/frps.toml",
-    "ubuntu-system/frpc.toml",
-    "ubuntu-system/FRP 内网穿透全流程部署指南.md",
-    "ubuntu-system/frpc-systemd.md",
-    "llama-cpp/模型部署指令集.md",
-    "未命名.base",
-    "整理脚本-v3.sh",
-    "整理脚本-v2.sh",
-    "整理脚本.sh",
-    "ubuntu-system/llama_cpp_systemd_guide.md",
-    "ubuntu-system/ToDesk-安装与问题处理指南.md",
-    "rocm/Ubuntu-26.04-ROCm-llama.cpp-问题排查.md",
-    "开发-运维/skills/web-design-guidelines/SKILL.md",
-    "开发-运维/skills/web-design-guidelines",
-    "开发-运维/skills/vercel-react-view-transitions/references/patterns.md",
-    "开发-运维/skills/vercel-react-view-transitions/references/nextjs.md",
-    "开发-运维/skills/vercel-react-view-transitions/references/implementation.md",
-    "开发-运维/skills/vercel-react-view-transitions/references/css-recipes.md",
-    "开发-运维/skills/vercel-react-view-transitions/references",
-    "开发-运维/skills/vercel-react-view-transitions/metadata.json",
-    "开发-运维/skills/vercel-react-view-transitions/SKILL.md",
-    "开发-运维/skills/vercel-react-view-transitions/README.md",
-    "开发-运维/skills/vercel-react-view-transitions/AGENTS.md",
-    "开发-运维/skills/vercel-react-view-transitions",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-styling.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-scrollview-content-inset.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-safe-area-scroll.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-pressable.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-native-modals.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-menus.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-measure-views.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-image-gallery.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/ui-expo-image.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/state-ground-truth.md",
-    "开发-运维/skills/vercel-react-native-skills/rules/scroll-position-no-state.md",
-    "开发-运维/skills/vercel-react-native-skills/rules",
-    "开发-运维/skills/figma/assets/icon.svg",
-    "开发-运维/skills/figma/assets/figma-small.svg",
-    "开发-运维/skills/figma/assets/figma.png",
-    "weknora-docs/images/settings.png",
-    "weknora-docs/images/qa.png",
-    "weknora-docs/images/pipeline2.jpeg",
-    "weknora-docs/images/pipeline.png",
-    "weknora-docs/images/pipeline.jpg",
-    "weknora-docs/images/logo.png",
-    "weknora-docs/images/knowledges.png"
+    "scripts/git-commit.js",
+    "scripts",
+    "个人工具/自用工具/企微应用回复机器人_统一文档.md",
+    "脚本工具/git-commit.js",
+    "脚本工具",
+    "个人工具/emails.md",
+    "个人工具/代理/魔戒订阅.txt",
+    "个人工具/代理",
+    "个人工具/自用工具/微信应用稳定运行配置指南md",
+    "个人工具/自用工具/启用物料优化存储过程.md",
+    "个人工具/自用工具",
+    "个人工具/账号/github账户",
+    "个人工具/账号/aws账户",
+    "个人工具/账号",
+    "个人工具/VPN/魔戒VPN.md",
+    "学习资料/PLC/融合版PLC学习计划（16周）.md",
+    "学习资料/PLC/全阶段详细日程（112天）.md",
+    "项目文档/LifeStream/README.md",
+    "项目文档/GangQing/项目现状分析.md",
+    "项目文档/GangQing/技术设计文档-TDD.md",
+    "项目文档/GangQing/tasks.md的生成规范与最佳实践.md",
+    "规范与模板/通用模板/TEMPLATE_GEMINI.md",
+    "规范与模板/通用模板/AGENTS-template.md",
+    "规范与模板/方法论/面谈指南.md",
+    "规范与模板/方法论/马上可执行方案.md",
+    "规范与模板/方法论/工业与AI融合应用落地路线.md",
+    "规范与模板/方法论/Hugging Face 国内镜像网站 (hf-mirror.com) 使用指南.md",
+    "规范与模板/方法论/三层五阶八步方法论.md",
+    "规范与模板/方法论/《工业与AI融合应用指南》通读总结.md",
+    "规范与模板/Kiro模板/kiro-spec-templates/tasks.md",
+    "规范与模板/Kiro模板/kiro-spec-templates/requirements.md",
+    "规范与模板/Kiro模板/kiro-spec-templates/design.md",
+    "规范与模板/规范指南/tools/windsurf/windsurf-rule-chinese-and-doc-output.md",
+    "规范与模板/规范指南/examples/vertical-ai-framework/tasks.md",
+    "规范与模板/规范指南/examples/vertical-ai-framework/tasks-prompts-optimized.md",
+    "规范与模板/规范指南/examples/vertical-ai-framework/requirements.md",
+    "开发运维/skills/figma/assets/icon.svg",
+    "开发运维/skills/figma/assets/figma.png",
+    "开发运维/skills/figma/assets/figma-small.svg",
+    "AI基础设施/WeKnora文档/images/settings.png",
+    "AI基础设施/WeKnora文档/images/qa.png",
+    "AI基础设施/WeKnora文档/images/pipeline2.jpeg",
+    "AI基础设施/WeKnora文档/images/pipeline.png",
+    "AI基础设施/WeKnora文档/images/pipeline.jpg",
+    "AI基础设施/WeKnora文档/images/logo.png",
+    "AI基础设施/WeKnora文档/images/knowledges.png"
   ]
 }
