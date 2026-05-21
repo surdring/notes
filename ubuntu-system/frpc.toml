@@ -1,0 +1,63 @@
+serverAddr = "47.96.159.100"
+serverPort = 7700
+loginFailExit = true
+
+log.to = "./frpc.log"
+log.level = "info"
+log.maxDays = 3
+
+auth.method = "token"
+auth.token = "aliyun2025"
+
+# 全局心跳配置
+transport.heartbeatInterval = 30
+transport.heartbeatTimeout = 90
+
+[[proxies]]
+name = "gpt-oss-20b"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8080
+remotePort = 8080
+
+[[proxies]]
+name = "Qwen3.5-35B-A3B"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8083
+remotePort = 8083
+
+[[proxies]]
+name = "she_web"
+type = "http"
+localIP = "127.0.0.1" 
+localPort = 5173
+subdomain = "she"
+
+[[proxies]]
+name = "lifestream_web"
+type = "http"
+localIP = "127.0.0.1" 
+localPort = 3001
+subdomain = "lifestream"
+
+[[proxies]]
+name = "wecombot"
+type = "http"
+localIP = "127.0.0.1" 
+localPort = 8001
+subdomain = "wecombot"
+
+[[proxies]]
+name = "she_web_https"
+type = "https"
+subdomain = "she" 
+
+[proxies.plugin]
+type = "https2http"
+localAddr = "127.0.0.1:5173"
+
+crtPath = "/home/zhengxueen/frp/she.tofly.top.pem"
+keyPath = "/home/zhengxueen/frp/she.tofly.top.key"
+hostHeaderRewrite = "she.tofly.top"
+

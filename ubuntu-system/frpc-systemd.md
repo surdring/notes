@@ -8,7 +8,7 @@ mkdir -p ~/.config/systemd/user
 nano ~/.config/systemd/user/frpc.service
 
 # 添加执行权限
-chmod +x ./frpc
+chmod +x ~/.config/systemd/user/frpc.service
 ```
 
 ### 2. 服务文件内容

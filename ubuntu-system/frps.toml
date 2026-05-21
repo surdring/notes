@@ -1,0 +1,28 @@
+# frps.toml
+bindAddr = "0.0.0.0"
+bindPort = 7700               # FRP 客户端与服务端通信的端口
+kcpBindPort = 7700            # KCP 协议端口（可选，建议开启）
+
+# --- HTTP 域名配置核心 ---
+vhostHTTPPort = 7080          # 接收 HTTP 域名请求的端口 (访问域名时需带此端口)
+subdomainHost = "tofly.top"   # 你的主域名
+# -----------------------
+
+# --- 仪表盘配置 ---
+webServer.addr = "0.0.0.0"
+webServer.port = 7500
+webServer.user = "surdring"
+webServer.password = "ZHENGxueen@1014"
+
+# --- 日志与认证 ---
+log.to = "/frpslog/frps.log"
+log.level = "info"
+log.maxDays = 3
+
+auth.method = "token"
+auth.token = "aliyun2025"
+
+# --- 允许端口范围 ---
+allowPorts = [
+  { start = 6000, end = 9000},
+]
