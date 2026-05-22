@@ -8,31 +8,20 @@
         "type": "tabs",
         "children": [
           {
-            "id": "b16cada7c89134d4",
+            "id": "583fd7e25b2066bd",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "llama-cpp/ROCm-llama.cpp-MI50-构建与运行指南.md",
+                "file": "AI基础设施/llama-cpp/模型部署指令集.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ROCm-llama.cpp-MI50-构建与运行指南"
-            }
-          },
-          {
-            "id": "583fd7e25b2066bd",
-            "type": "leaf",
-            "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "模型部署指令集"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -194,8 +183,14 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "583fd7e25b2066bd",
+  "active": "11b6c352fe219a15",
   "lastOpenFiles": [
+    "AI基础设施/Clash/Clash Verge规则方式使用指南.md",
+    "AI基础设施/Clash",
+    "AI基础设施/Gemini/Gemini免费API使用指南.md",
+    "AI基础设施/Gemini",
+    "个人工具/自用工具/企微应用回复机器人_统一文档 copy.md",
+    "AI基础设施/llama-cpp/模型部署指令集.md",
     "scripts/git-commit.js",
     "scripts",
     "个人工具/自用工具/企微应用回复机器人_统一文档.md",
@@ -207,9 +202,6 @@
     "个人工具/自用工具/微信应用稳定运行配置指南md",
     "个人工具/自用工具/启用物料优化存储过程.md",
     "个人工具/自用工具",
-    "个人工具/账号/github账户",
-    "个人工具/账号/aws账户",
-    "个人工具/账号",
     "个人工具/VPN/魔戒VPN.md",
     "学习资料/PLC/融合版PLC学习计划（16周）.md",
     "学习资料/PLC/全阶段详细日程（112天）.md",
@@ -229,9 +221,6 @@
     "规范与模板/Kiro模板/kiro-spec-templates/requirements.md",
     "规范与模板/Kiro模板/kiro-spec-templates/design.md",
     "规范与模板/规范指南/tools/windsurf/windsurf-rule-chinese-and-doc-output.md",
-    "规范与模板/规范指南/examples/vertical-ai-framework/tasks.md",
-    "规范与模板/规范指南/examples/vertical-ai-framework/tasks-prompts-optimized.md",
-    "规范与模板/规范指南/examples/vertical-ai-framework/requirements.md",
     "开发运维/skills/figma/assets/icon.svg",
     "开发运维/skills/figma/assets/figma.png",
     "开发运维/skills/figma/assets/figma-small.svg",
