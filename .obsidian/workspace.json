@@ -4,24 +4,39 @@
     "type": "split",
     "children": [
       {
-        "id": "100113b3ba48b867",
+        "id": "88a17017fb12a5f5",
         "type": "tabs",
         "children": [
           {
-            "id": "583fd7e25b2066bd",
+            "id": "065a9c227959af9c",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "AI基础设施/llama-cpp/模型部署指令集.md",
+                "file": "AI基础设施/OpenClaw/Brave Search API Key.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "模型部署指令集"
+              "title": "Brave Search API Key"
+            }
+          },
+          {
+            "id": "e905ecfc0c664e15",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "系统运维/Ubuntu系统/Linux 磁盘空间耗尽（日志膨胀）故障处理报告.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Linux 磁盘空间耗尽（日志膨胀）故障处理报告"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -41,7 +56,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "文件列表"
@@ -53,7 +70,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "BRAVE",
+                "query": "brave",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -183,44 +200,45 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "583fd7e25b2066bd",
+  "active": "e905ecfc0c664e15",
   "lastOpenFiles": [
-    "学习资料/AI工程从基础到精通/19-capstone-projects/17_personal-ai-tutor.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/16_github-issue-to-pr-agent.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/15_constitutional-safety-harness.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/14_speculative-decoding-server.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/13_mcp-server-with-registry.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/12_video-understanding-pipeline.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/11_llm-observability-dashboard.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/10_multi-agent-software-team.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/09_code-migration-agent.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/08_production-rag-chatbot.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/07_end-to-end-fine-tuning-pipeline.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/06_devops-troubleshooting-agent.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/05_autonomous-research-agent.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/04_multimodal-document-qa.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/03_realtime-voice-assistant.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/02_rag-over-codebase.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects/01_terminal-native-coding-agent.md",
-    "学习资料/AI工程从基础到精通/19-capstone-projects",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/30_dual-use-risk-cyber-bio-chem-nuclear.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/29_moderation-systems-openai-perspective-llamaguard.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/28_alignment-research-ecosystem.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/27_data-provenance-training-governance.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/26_model-system-dataset-cards.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/25_echoleak-cves-for-ai.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/24_regulatory-frameworks-eu-us-uk-korea.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/23_watermarking-synthid-stable-signature-c2pa.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment/22_differential-privacy-for-llms.md",
-    "学习资料/AI工程从基础到精通/18-ethics-safety-alignment",
-    "学习资料/AI工程从基础到精通/17-infrastructure-and-production",
-    "学习资料/AI工程从基础到精通/16-multi-agent-and-swarms",
-    "学习资料/AI工程从基础到精通/15-autonomous-systems",
-    "学习资料/AI工程从基础到精通/14-agent-engineering",
-    "学习资料/AI工程从基础到精通/13-tools-and-protocols",
-    "学习资料/AI工程从基础到精通/12-multimodal-ai",
-    "学习资料/AI工程从基础到精通/11-llm-engineering",
-    "学习资料/AI工程从基础到精通/10-llms-from-scratch",
+    "LLM/Tavily Search.md",
+    "系统运维/Ubuntu系统/Linux 磁盘空间耗尽（日志膨胀）故障处理报告.md",
+    "LLM/英伟达API.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-06-第六章-成事-02-第二节-成事之旅如何达成自己的人生目标.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-06-第六章-成事-01-第一节-目标觉醒如何找到自己的人生目标.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-05-第五章-战略-02-第二节-多维不读书的人没什么好焦虑的.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-05-第五章-战略-01-第一节-环境真相扎心了偷懒比努力更重要.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-06-第六节-跨界如果你想与众不同不妨试着跨界潜行.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-05-第五节-深度练习跨越从普通到卓越的分水岭.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-04-第四节-降低期待命运一定钟爱那些愿意慢慢变好的人.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-03-第三节-假设什么能力可以让自己快速进步.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-02-第二节-写下来我们都低估了写下来的力量.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/下篇-04-第四章-策略-01-第一节-认知驱动做一个真正的长期主义者.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-03-第三章-心理-03-第三节-一劳永逸想要一劳永逸还是死了这条心吧.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-03-第三章-心理-02-第二节-二元对立恭喜你走出二元对立来到真正的成人世界.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-03-第三章-心理-01-第一节-负面偏好为什么你总是不快乐.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-02-第二章-身份-04-第四节-理性成功最怕一开始就对自己说不可能.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-02-第二章-身份-03-第三节-语言美好人生从好好说话开始.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-02-第二章-身份-02-第二节-身份改变自己的终极力量.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-02-第二章-身份-01-第一节-层次你在这个世界的哪一层.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-01-第一章-价值-05-第五节-内向被动社交内向成长者的制胜之道.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-01-第一章-价值-04-第四节-镜子所有的社交都是一面镜子.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-01-第一章-价值-03-第三节-利他毋庸置疑利他是最好的人生.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-01-第一章-价值-02-第二节-价值用价值规律看问题你的人生会发生巨变.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动/上篇-01-第一章-价值-01-第一节-复制不要浪费生命给你的无限可能.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知驱动",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知觉醒/下篇-08-第八章-早冥读写跑-05-第五节-运动灵魂想要走得远身体必须在路上.md",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解/认知觉醒",
+    "书籍/认知觉醒/认知觉醒-驱动-章节讲解",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》/认知觉醒：开启自我改变的原动力.pdf",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》/认知觉醒：开启自我改变的原动力.mobi",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》/认知觉醒：开启自我改变的原动力.jpg",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》/认知觉醒：开启自我改变的原动力.epub",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》/认知觉醒：开启自我改变的原动力.azw3",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知觉醒》",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知驱动》/《认知驱动》.pdf",
+    "书籍/认知觉醒/认知觉醒-驱动电子书/《认知驱动》/《认知驱动》.mobi",
     "开发运维/skills/figma/assets/icon.svg",
     "开发运维/skills/figma/assets/figma.png",
     "开发运维/skills/figma/assets/figma-small.svg",
@@ -229,7 +247,6 @@
     "AI基础设施/WeKnora文档/images/pipeline2.jpeg",
     "AI基础设施/WeKnora文档/images/pipeline.png",
     "AI基础设施/WeKnora文档/images/pipeline.jpg",
-    "AI基础设施/WeKnora文档/images/logo.png",
-    "AI基础设施/WeKnora文档/images/knowledges.png"
+    "AI基础设施/WeKnora文档/images/logo.png"
   ]
 }

@@ -14,7 +14,7 @@ Thumbs.db
 *.swo
 *~
 
-# 临时文件
+# 临时文件和日志
 *.tmp
 *.temp
 *.log
@@ -37,38 +37,7 @@ Thumbs.db
 *.tar
 *.zip
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# 环境变量文件
+# 环境变量文件（敏感信息）
 .env
 .env.local
 .env.development.local
@@ -86,6 +55,36 @@ secrets.*
 *.db
 *.sqlite
 *.sqlite3
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
 
 # 大型媒体文件
 *.mp4
@@ -113,7 +112,6 @@ secrets.*
 .parcel-cache/
 
 # 构建输出
-build/
 dist/
 out/
 
@@ -121,35 +119,13 @@ out/
 coverage/
 .nyc_output/
 
-# 运行时文件
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# 日志文件
-logs
-*.log
-
 # 本地配置文件
 local.json
 local.*
 settings.local.*
 
-# 宝塔面板相关
-/www/server/panel/vhost/nginx/*.conf.backup
-/www/server/nginx/conf/nginx.conf.backup
-
-# 系统服务配置备份
-/etc/systemd/system/*.service.backup
-
-# 临时脚本
-tmp/
-temp/
-
 # 文档构建输出
 docs/_build/
-site/
 
 # Hugo
 public/
@@ -161,6 +137,10 @@ site/
 # Sphinx
 _build/
 
+# 临时脚本
+tmp/
+temp/
+
 # LaTeX辅助文件
 *.aux
 *.bbl
@@ -170,18 +150,17 @@ _build/
 *.synctex.gz
 *.toc
 
-.env.example
-.env
+# 宝塔面板相关
+/www/server/panel/vhost/nginx/*.conf.backup
+/www/server/nginx/conf/nginx.conf.backup
+
+# 系统服务配置备份
+/etc/systemd/system/*.service.backup
 
 # llama.cpp-rocm
-llama.cpp-rocm
-llama.cpp-rocm/*
+llama.cpp-rocm/
 
-
+# 其他
 .trash/
-.obsidian/plugins/
-*.zip
-
-.obsidian
-
-AI基础设施/RAGFlow/高中
+.obsidian/
+AI基础设施/RAGFlow/高中/

@@ -13,7 +13,7 @@
 
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-import { dirname, resolve, extname, basename } from 'path';
+import { dirname, resolve } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -23,24 +23,30 @@ const ANSI = {
   green: '\x1b[32m', yellow: '\x1b[33m', cyan: '\x1b[36m', gray: '\x1b[90m',
 };
 
-function run(cmd) {
-  return execSync(cmd, { encoding: 'utf-8', cwd: ROOT }).trim();
+const useColor = process.stdout.isTTY;
+
+function run(cmd, opts = {}) {
+  try {
+    return execSync(cmd, { encoding: 'utf-8', cwd: ROOT, ...opts }).trimEnd();
+  } catch (err) {
+    const msg = err.stderr?.trim() || err.message;
+    throw new Error(msg);
+  }
 }
 
 function color(c, text) {
-  return `${ANSI[c]}${text}${ANSI.reset}`;
+  return useColor ? `${ANSI[c]}${text}${ANSI.reset}` : text;
 }
 
 function getChangedFiles() {
   const status = run('git status --porcelain');
   if (!status) return [];
   return status.split('\n').map(line => {
-    // --porcelain format: "XY filename" or "XY orig -> dest" for renames
-    // XY is exactly 2 chars, then at least one space, then filename
     const trimmed = line.trim();
     if (!trimmed) return null;
-    const statusCode = trimmed.substring(0, 2).trim();
-    const file = trimmed.substring(2).trim().replace(/^.*->\s*/, ''); // handle renames
+    // --porcelain 格式: "XY filename" 或 "XY  orig -> dest" (重命名)
+    const statusCode = trimmed.slice(0, 2).trim();
+    const file = trimmed.slice(2).trim().replace(/^.*->\s*/, '');
     return { status: statusCode, file };
   }).filter(f => f && f.file);
 }
@@ -49,15 +55,22 @@ function generateMessage(files) {
   const added = files.filter(f => f.status === 'A' || f.status === '??');
   const modified = files.filter(f => f.status === 'M');
   const deleted = files.filter(f => f.status === 'D');
+  const renamed = files.filter(f => f.status === 'R');
 
   const parts = [];
   if (added.length > 0) parts.push(`新增 ${added.length} 文件`);
   if (modified.length > 0) parts.push(`修改 ${modified.length} 文件`);
   if (deleted.length > 0) parts.push(`删除 ${deleted.length} 文件`);
+  if (renamed.length > 0) parts.push(`重命名 ${renamed.length} 文件`);
 
-  // Build scope from affected directories (top-level)
-  const dirs = [...new Set(files.map(f => f.file.split('/')[0]))];
-  const scope = dirs.length === 1 ? dirs[0] : `${dirs.length} dirs`;
+  // 从影响的顶层目录推断 scope
+  const dirs = [...new Set(files.map(f => {
+    const idx = f.file.indexOf('/');
+    return idx === -1 ? '.' : f.file.slice(0, idx);
+  }).filter(Boolean))];
+  const scope = dirs.length === 1 && dirs[0] !== '.' ? dirs[0]
+    : dirs.length > 1 ? `${dirs.length} dirs`
+    : 'root';
 
   const subject = parts.join(', ') || '更新';
   return `update(${scope}): ${subject}`;
@@ -66,7 +79,7 @@ function generateMessage(files) {
 function main() {
   console.log(color('bright', '\n  Git Commit Helper\n'));
 
-  // Check if in a git repo
+  // 检查是否在 Git 仓库中
   try {
     run('git rev-parse --git-dir');
   } catch {
@@ -85,25 +98,32 @@ function main() {
 
   console.log(color('bright', '  变更文件:'));
   for (const { status, file } of files) {
-    const colorName = status === 'M' ? 'yellow' : status === 'A' || status === '??' ? 'green' : status === 'D' ? 'red' : 'gray';
+    const colorName = status === 'M' ? 'yellow'
+      : status === 'A' || status === '??' ? 'green'
+      : status === 'D' ? 'red' : 'gray';
     console.log(`    ${color(colorName, status.padStart(2))}  ${file}`);
   }
   console.log();
 
-  // Stage all changes
+  // 暂存所有变更
   run('git add -A');
   console.log(color('green', '  已添加到暂存区'));
 
-  // Check if there are actually staged changes
-  const diff = run('git diff --cached --stat');
-  if (!diff) {
+  // 检查是否真的有暂存变更（--quiet: 退出码 0=无差异, 非0=有差异）
+  let hasStagedChanges = false;
+  try {
+    run('git diff --cached --quiet');
+  } catch {
+    hasStagedChanges = true;
+  }
+  if (!hasStagedChanges) {
     console.log(color('yellow', '  暂存区无实际变更，跳过提交\n'));
     process.exit(0);
   }
   console.log();
 
-  // Commit message
-  let message = process.argv[2];
+  // 提交信息
+  let message = process.argv[2]?.trim();
   if (!message) {
     message = generateMessage(files);
     console.log(color('gray', `  自动生成提交信息: "${message}"`));
@@ -111,7 +131,6 @@ function main() {
   }
 
   try {
-    // Escape quotes in message for shell safety
     const safeMessage = message.replace(/"/g, '\\"');
     run(`git commit -m "${safeMessage}"`);
     const hash = run('git rev-parse --short HEAD');
@@ -120,12 +139,11 @@ function main() {
       run(`git push origin ${branch}`);
       console.log(color('green', `  推送成功: origin/${branch}\n`));
     } catch (err) {
-      const lines = (err.message || '').split('\n').filter(l => l.includes('fatal') || l.includes('error') || l.includes('remote'));
-      const hint = lines.slice(0, 2).join(' ') || '未知错误';
+      const hint = (err.message || '').split('\n').slice(0, 2).join('; ');
       console.log(color('yellow', `  推送失败: ${hint}\n`));
     }
   } catch (err) {
-    console.log(color('red', `  提交失败: ${err.message?.split('\n')[0] || '未知错误'}\n`));
+    console.log(color('red', `  提交失败: ${(err.message || '').split('\n')[0]}\n`));
     process.exit(1);
   }
 }
